@@ -1,0 +1,25 @@
+<header class="header">
+  <div class="header__marca">
+    <span class="header__titulo">Asignación de clases</span>
+    <span class="header__subtitulo">Campus Buenos Aires — Monserrat / Belgrano</span>
+  </div>
+
+  <nav class="header__nav" aria-label="Navegación principal">
+    <a routerLink="/" routerLinkActive="activo" [routerLinkActiveOptions]="{ exact: true }">Última planificación</a>
+    <a routerLink="/demanda" routerLinkActive="activo">Demanda</a>
+    <a routerLink="/planificacion-final" routerLinkActive="activo">Planificación final</a>
+    <a routerLink="/mapa" routerLinkActive="activo">Mapa</a>
+    <a routerLink="/aulas" routerLinkActive="activo">Aulas</a>
+    <a routerLink="/materias" routerLinkActive="activo">Materias</a>
+    <a routerLink="/docentes" routerLinkActive="activo">Docentes</a>
+  </nav>
+
+  <button
+    type="button"
+    class="btn header__toggle-tema"
+    (click)="alternarTema()"
+    [attr.aria-pressed]="theme.tema() === 'night'"
+  >
+    {{ theme.tema() === 'night' ? 'Modo día' : 'Modo noche' }}
+  </button>
+</header>

@@ -1,0 +1,169 @@
+.demanda {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.demanda__encabezado-contenido {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.demanda__encabezado h1 {
+  margin: 0;
+}
+
+.demanda__ayuda {
+  margin: 4px 0 0;
+  color: var(--color-muted);
+  font-size: 14px;
+}
+
+.demanda__error {
+  padding: 12px 16px;
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+  border-radius: 6px;
+  margin: 0;
+}
+
+.demanda__estado {
+  color: var(--color-muted);
+  margin: 0;
+}
+
+.demanda__tabla-contenedor {
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-card);
+}
+
+.tabla th,
+.tabla td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 14px;
+}
+
+.tabla th {
+  color: var(--color-muted);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.tabla__th--ordenable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.tabla__th--ordenable:hover {
+  color: var(--color-text);
+}
+
+.tabla tbody tr:hover {
+  background: var(--color-bg);
+}
+
+.tabla__num {
+  text-align: right;
+}
+
+.tabla__materia {
+  font-weight: 600;
+}
+
+.demanda__link-aulas {
+  display: inline-block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.demanda__link-aulas:hover {
+  text-decoration: underline;
+}
+
+.demanda__th-nota {
+  display: block;
+  font-size: 10px;
+  font-weight: 400;
+  text-transform: none;
+  color: var(--color-muted);
+  cursor: help;
+}
+
+.demanda__input-tope {
+  width: 70px;
+  text-align: right;
+  padding: 4px 6px;
+  border-radius: 4px;
+  border: 1px dashed var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-muted);
+  font-size: 14px;
+}
+
+.demanda__brecha--exceso {
+  color: #22c55e;
+  font-weight: 700;
+}
+
+.demanda__brecha--deficit {
+  color: var(--color-danger);
+  font-weight: 700;
+}
+
+.demanda__leyenda {
+  display: flex;
+  gap: 24px;
+  padding: 16px;
+  background: var(--color-card);
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.demanda__item-leyenda {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.demanda__marca {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.demanda__marca--exceso {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+}
+
+.demanda__marca--deficit {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
+.demanda__marca--cero {
+  background: var(--color-bg);
+  color: var(--color-muted);
+}

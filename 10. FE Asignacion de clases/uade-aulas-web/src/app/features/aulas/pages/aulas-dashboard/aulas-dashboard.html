@@ -1,0 +1,141 @@
+<section class="dashboard">
+  <header class="dashboard__encabezado">
+    <div>
+      <h1>Aulas</h1>
+      <p class="dashboard__ayuda">
+        Catálogo físico de aulas: dónde están y qué capacidad tienen. Solo lectura — el estado actual (libre/ocupada)
+        refleja lo último grabado en Planificación final.
+      </p>
+    </div>
+  </header>
+
+  <nav class="pestanas" role="tablist" aria-label="Sedes">
+    <button
+      type="button"
+      role="tab"
+      class="pestanas__item"
+      [class.pestanas__item--activa]="pestanaActiva() === ''"
+      [attr.aria-selected]="pestanaActiva() === ''"
+      (click)="seleccionarPestana('')"
+    >
+      Todas <span class="pestanas__cantidad">{{ cantidadPorSede('') }}</span>
+    </button>
+    @for (pestana of pestanasSede; track pestana.codigo) {
+      <button
+        type="button"
+        role="tab"
+        class="pestanas__item"
+        [class.pestanas__item--activa]="pestanaActiva() === pestana.codigo"
+        [attr.aria-selected]="pestanaActiva() === pestana.codigo"
+        (click)="seleccionarPestana(pestana.codigo)"
+      >
+        {{ pestana.etiqueta }} <span class="pestanas__cantidad">{{ cantidadPorSede(pestana.codigo) }}</span>
+      </button>
+    }
+  </nav>
+
+  <form class="filtros" (ngSubmit)="$event.preventDefault()">
+    @if (!pestanaActiva()) {
+      <div class="filtros__campo">
+        <label for="aulas-sede">Sede</label>
+        <select id="aulas-sede" name="sede" [(ngModel)]="sedeSeleccionada" (change)="onCambioSede()">
+          <option value="">Todas</option>
+          @for (sede of sedesDisponibles(); track sede.id) {
+            <option [value]="sede.id">{{ sede.nombre }}</option>
+          }
+        </select>
+      </div>
+    }
+
+    <div class="filtros__campo">
+      <label for="aulas-edificio">Edificio</label>
+      <select id="aulas-edificio" name="edificio" [(ngModel)]="edificioSeleccionado" (change)="onCambioEdificio()">
+        <option value="">Todos</option>
+        @for (edificio of edificiosDisponibles(); track edificio) {
+          <option [value]="edificio">{{ edificio }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="filtros__campo">
+      <label for="aulas-piso">Piso</label>
+      <select id="aulas-piso" name="piso" [(ngModel)]="pisoSeleccionado">
+        <option value="">Todos</option>
+        @for (piso of pisosDisponibles(); track piso) {
+          <option [value]="piso">{{ etiquetaPiso(piso) }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="filtros__campo">
+      <label for="aulas-tipo">Tipo</label>
+      <select id="aulas-tipo" name="tipo" [(ngModel)]="tipoSeleccionado">
+        <option value="">Todos</option>
+        @for (tipo of tiposDisponibles(); track tipo) {
+          <option [value]="tipo">{{ tipo }}</option>
+        }
+      </select>
+    </div>
+  </form>
+
+  <div class="agrupador">
+    <span class="agrupador__etiqueta">Agrupar por:</span>
+    @for (campo of camposAgrupadores(); track campo.etiqueta; let i = $index) {
+      <label class="agrupador__chip" [class.agrupador__chip--activo]="i < nivelesActivos()">
+        <input type="checkbox" [checked]="i < nivelesActivos()" (change)="toggleNivel(i)" />
+        {{ campo.etiqueta }}
+      </label>
+    }
+  </div>
+
+  @if (error()) {
+    <p class="dashboard__error">{{ error() }}</p>
+  }
+
+  @if (cargando()) {
+    <p class="dashboard__estado">Cargando aulas...</p>
+  } @else if (!error() && aulasFiltradas().length === 0) {
+    <p class="dashboard__estado">No hay aulas que coincidan con los filtros.</p>
+  } @else {
+    <div class="dashboard__tabla-contenedor">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th class="tabla__th--ordenable" (click)="orden.ordenarPor('sedeNombre')">Sede {{ orden.indicador('sedeNombre') }}</th>
+            <th class="tabla__th--ordenable" (click)="orden.ordenarPor('codigo')">Aula principal {{ orden.indicador('codigo') }}</th>
+            <th class="tabla__th--ordenable" (click)="orden.ordenarPor('piso')">Piso {{ orden.indicador('piso') }}</th>
+            <th class="tabla__th--ordenable" (click)="orden.ordenarPor('numeroAula')">Número de aula {{ orden.indicador('numeroAula') }}</th>
+            <th class="tabla__th--ordenable" (click)="orden.ordenarPor('tipoDetalle')">Tipo de aula {{ orden.indicador('tipoDetalle') }}</th>
+            <th class="tabla__th--ordenable" (click)="orden.ordenarPor('capacidadReal')">Capacidad real {{ orden.indicador('capacidadReal') }}</th>
+            <th class="tabla__th--ordenable" (click)="orden.ordenarPor('estado')">Estado actual {{ orden.indicador('estado') }}</th>
+            <th class="tabla__th--ordenable" (click)="orden.ordenarPor('inscriptosOrden')">Inscriptos {{ orden.indicador('inscriptosOrden') }}</th>
+            <th class="tabla__th--ordenable" (click)="orden.ordenarPor('diferenciaOrden')">Diferencia {{ orden.indicador('diferenciaOrden') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of aulasFiltradas(); track $index) {
+            @if (item.tipo === 'grupo') {
+              <tr class="tabla__fila-grupo">
+                <td colspan="9" [style.paddingLeft.px]="16 + item.nivel * 20">
+                  {{ item.etiqueta }} <span class="tabla__grupo-cantidad">({{ item.cantidad }})</span>
+                </td>
+              </tr>
+            } @else {
+              <tr [class.tabla__fila--inactiva]="!item.fila.activa">
+                <td>{{ item.fila.sedeNombre }}</td>
+                <td class="tabla__codigo">{{ item.fila.codigo }}</td>
+                <td>{{ item.fila.pisoEtiqueta }}</td>
+                <td>{{ item.fila.numeroAula || '—' }}</td>
+                <td>{{ item.fila.tipoDetalle || item.fila.tipoGrupo }}</td>
+                <td>{{ item.fila.capacidadReal }}</td>
+                <td>{{ item.fila.estado }}</td>
+                <td>{{ item.fila.inscriptosTexto }}</td>
+                <td [class.tabla__diferencia--sobrecupo]="item.fila.sobrecupo">{{ item.fila.diferenciaTexto }}</td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

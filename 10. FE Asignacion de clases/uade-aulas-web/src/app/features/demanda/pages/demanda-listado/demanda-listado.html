@@ -1,0 +1,90 @@
+<section class="demanda">
+  <header class="demanda__encabezado">
+    <div class="demanda__encabezado-contenido">
+      <div>
+        <h1>Demanda de clases</h1>
+        <p class="demanda__ayuda">Comparación entre solicitudes de inscripción y capacidad disponible.</p>
+      </div>
+      <button type="button" class="btn btn-primary" (click)="actualizar()" [disabled]="actualizando()">
+        {{ actualizando() ? 'Actualizando...' : '↻ Actualizar' }}
+      </button>
+    </div>
+  </header>
+
+  @if (error()) {
+    <p class="demanda__error">{{ error() }}</p>
+  }
+
+  @if (cargando()) {
+    <p class="demanda__estado">Cargando demanda...</p>
+  } @else if (filas().length === 0) {
+    <p class="demanda__estado">No hay datos de demanda.</p>
+  } @else {
+    <div class="demanda__tabla-contenedor">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th class="tabla__th--ordenable" (click)="orden.ordenarPor('materiaNombre')">Materia {{ orden.indicador('materiaNombre') }}</th>
+            <th class="tabla__th--ordenable" (click)="orden.ordenarPor('facultad')">Facultad {{ orden.indicador('facultad') }}</th>
+            <th class="tabla__num tabla__th--ordenable" (click)="orden.ordenarPor('solicitudes')">Solicitudes {{ orden.indicador('solicitudes') }}</th>
+            <th class="tabla__num tabla__th--ordenable" (click)="orden.ordenarPor('numClases')">Clases {{ orden.indicador('numClases') }}</th>
+            <th class="tabla__num tabla__th--ordenable" (click)="orden.ordenarPor('asientos')">Asientos {{ orden.indicador('asientos') }}</th>
+            <th class="tabla__num tabla__th--ordenable" (click)="orden.ordenarPor('tope')">
+              Tope {{ orden.indicador('tope') }}
+              <span class="demanda__th-nota" title="Pendiente: el backend todavía no tiene este dato">(pendiente)</span>
+            </th>
+            <th class="tabla__th--ordenable" (click)="orden.ordenarPor('brecha')">Estado de la brecha {{ orden.indicador('brecha') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (fila of filasOrdenadas(); track fila.materiaCodigo) {
+            <tr>
+              <td>
+                <div class="tabla__materia">{{ fila.materiaCodigo }} — {{ fila.materiaNombre }}</div>
+                <a
+                  class="demanda__link-aulas"
+                  [routerLink]="['/planificacion-final']"
+                  [queryParams]="{ materia: fila.materiaCodigo }"
+                >
+                  Ver las {{ fila.numClases }} clases en Planificación final →
+                </a>
+              </td>
+              <td>{{ fila.facultad || '—' }}</td>
+              <td class="tabla__num">{{ fila.solicitudes }}</td>
+              <td class="tabla__num">{{ fila.numClases }}</td>
+              <td class="tabla__num">{{ fila.asientos }}</td>
+              <td class="tabla__num">
+                <input
+                  type="number"
+                  class="demanda__input-tope"
+                  [value]="fila.tope ?? ''"
+                  placeholder="—"
+                  disabled
+                  title="Pendiente: se habilita cuando el backend tenga dónde guardarlo"
+                />
+              </td>
+              <td class="tabla__num" [class]="obtenerClaseBrecha(fila.brecha)">
+                {{ obtenerTextoBrecha(fila.brecha) }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="demanda__leyenda">
+      <div class="demanda__item-leyenda">
+        <span class="demanda__marca demanda__marca--deficit">Faltan 5</span>
+        <span>Déficit — la demanda supera los asientos disponibles</span>
+      </div>
+      <div class="demanda__item-leyenda">
+        <span class="demanda__marca demanda__marca--exceso">Sobran 3</span>
+        <span>Exceso — hay más asientos que solicitudes</span>
+      </div>
+      <div class="demanda__item-leyenda">
+        <span class="demanda__marca demanda__marca--cero">0</span>
+        <span>Balanceado</span>
+      </div>
+    </div>
+  }
+</section>

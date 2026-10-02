@@ -1,0 +1,205 @@
+.dashboard {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dashboard__encabezado h1 {
+  margin: 0;
+}
+
+.dashboard__ayuda {
+  margin: 4px 0 0;
+  color: var(--color-muted);
+  font-size: 14px;
+}
+
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 12px;
+  padding: 16px;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.filtros__campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 160px;
+}
+
+.filtros__campo label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+.filtros__campo select {
+  min-height: 40px;
+  padding: 0 10px;
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.agrupador {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.agrupador__etiqueta {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+.agrupador__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-card);
+  color: var(--color-muted);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.agrupador__chip--activo {
+  border-color: var(--color-primary);
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.agrupador__chip input {
+  cursor: pointer;
+}
+
+.dashboard__error {
+  padding: 12px 16px;
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+  border-radius: 6px;
+  margin: 0;
+}
+
+.dashboard__estado {
+  color: var(--color-muted);
+  margin: 0;
+}
+
+.dashboard__tabla-contenedor {
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-card);
+}
+
+.tabla th,
+.tabla td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.tabla th {
+  color: var(--color-muted);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.tabla__th--ordenable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.tabla__th--ordenable:hover {
+  color: var(--color-text);
+}
+
+.tabla tbody tr:hover {
+  background: var(--color-bg);
+}
+
+.tabla__codigo {
+  font-weight: 600;
+}
+
+.tabla__fila--inactiva {
+  opacity: 0.5;
+}
+
+.tabla__diferencia--sobrecupo {
+  color: var(--color-danger);
+  font-weight: 700;
+}
+
+.tabla__fila-grupo td {
+  background: var(--color-bg);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--color-text);
+  white-space: normal;
+}
+
+.tabla__grupo-cantidad {
+  font-weight: 400;
+  color: var(--color-muted);
+}
+
+.pestanas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.pestanas__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  margin-bottom: -1px;
+  border: 1px solid transparent;
+  border-bottom: 2px solid transparent;
+  border-radius: 6px 6px 0 0;
+  background: transparent;
+  color: var(--color-muted);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pestanas__item:hover {
+  color: var(--color-text);
+}
+
+.pestanas__item--activa {
+  color: var(--color-text);
+  background: var(--color-card);
+  border-color: var(--color-border);
+  border-bottom: 2px solid var(--color-primary);
+}
+
+.pestanas__cantidad {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-muted);
+}

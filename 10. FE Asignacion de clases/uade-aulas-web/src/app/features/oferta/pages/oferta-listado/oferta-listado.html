@@ -1,0 +1,186 @@
+<section class="listado">
+  <header class="listado__encabezado">
+    <div class="listado__encabezado-contenido">
+      <div>
+        <h1>Última planificación</h1>
+        <p class="listado__ayuda">
+          Programación replicada del cuatrimestre anterior. Filtrá por sede, turno o facultad, o buscá por materia,
+          docente o aula.
+        </p>
+      </div>
+      <div class="listado__encabezado-acciones">
+        <span class="listado__badge-lectura">🔒 Solo lectura — la edición se hace desde Mapa</span>
+        <button type="button" class="btn" (click)="abrirPanelCarga()">Cargar planificación (Excel)</button>
+      </div>
+    </div>
+
+    @if (periodoActual()) {
+      <div class="listado__periodo listado__periodo--ok">
+        📅 Mostrando: <strong>{{ periodoActual()!.nombre }}</strong>
+      </div>
+    } @else if (periodoDesconocido()) {
+      <div class="listado__periodo listado__periodo--desconocido">
+        ⚠️ No se pudo identificar a qué período corresponde esta información (no hay períodos cargados o el
+        servidor no respondió).
+      </div>
+    }
+  </header>
+
+  <form class="filtros" (ngSubmit)="buscar()">
+    <div class="filtros__campo">
+      <label for="filtro-sede">Sede</label>
+      <select id="filtro-sede" name="sede" [(ngModel)]="sedeSeleccionada" (change)="buscar()">
+        <option value="">Todas</option>
+        @for (sede of catalogos().sedes; track sede.id) {
+          <option [value]="sede.id">{{ sede.nombre }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="filtros__campo">
+      <label for="filtro-turno">Turno</label>
+      <select id="filtro-turno" name="turno" [(ngModel)]="turnoSeleccionado" (change)="buscar()">
+        <option value="">Todos</option>
+        <option value="MANANA">Mañana</option>
+        <option value="TARDE">Tarde</option>
+        <option value="NOCHE">Noche</option>
+      </select>
+    </div>
+
+    <div class="filtros__campo">
+      <label for="filtro-facultad">Facultad</label>
+      <select id="filtro-facultad" name="facultad" [(ngModel)]="facultadSeleccionada" (change)="buscar()">
+        <option value="">Todas</option>
+        @for (facultad of catalogos().facultades; track facultad) {
+          <option [value]="facultad">{{ facultad }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="filtros__campo filtros__campo--busqueda">
+      <label for="filtro-busqueda">Búsqueda</label>
+      <input
+        id="filtro-busqueda"
+        name="busqueda"
+        type="text"
+        placeholder="Materia, docente o aula... (sin importar acentos)"
+        list="oferta-sugerencias"
+        [(ngModel)]="busqueda"
+      />
+      <datalist id="oferta-sugerencias">
+        @for (sugerencia of sugerenciasBusqueda(); track sugerencia) {
+          <option [value]="sugerencia"></option>
+        }
+      </datalist>
+    </div>
+
+    <div class="filtros__acciones">
+      <button type="button" class="btn" (click)="limpiarFiltros()">Limpiar</button>
+    </div>
+  </form>
+
+  @if (error()) {
+    <p class="listado__error">{{ error() }}</p>
+  }
+
+  @if (cargando()) {
+    <p class="listado__estado">Cargando última planificación...</p>
+  } @else if (!error() && filas().length === 0) {
+    <p class="listado__estado">No hay clases que coincidan con los filtros.</p>
+  } @else if (filasVisibles().length === 0) {
+    <p class="listado__estado">No hay clases que coincidan con la búsqueda.</p>
+  } @else {
+    <div class="listado__tabla-contenedor">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th class="tabla__th--ordenable" (click)="orden.ordenarPor('materiaNombre')">Materia {{ orden.indicador('materiaNombre') }}</th>
+            <th class="tabla__th--ordenable" (click)="orden.ordenarPor('facultad')">Facultad {{ orden.indicador('facultad') }}</th>
+            <th class="tabla__th--ordenable" (click)="orden.ordenarPor('sedeNombre')">Sede {{ orden.indicador('sedeNombre') }}</th>
+            <th class="tabla__th--ordenable" (click)="orden.ordenarPor('aulaCodigo')">Aula {{ orden.indicador('aulaCodigo') }}</th>
+            <th class="tabla__th--ordenable" (click)="orden.ordenarPor('turno')">Turno {{ orden.indicador('turno') }}</th>
+            <th>Horario</th>
+            <th>Días</th>
+            <th class="tabla__th--ordenable" (click)="orden.ordenarPor('inscriptos')">Inscriptos {{ orden.indicador('inscriptos') }}</th>
+            <th class="tabla__th--ordenable" (click)="orden.ordenarPor('sillasVacias')">Sillas vacías {{ orden.indicador('sillasVacias') }}</th>
+            <th class="tabla__th--ordenable" (click)="orden.ordenarPor('docentes')">Docentes {{ orden.indicador('docentes') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (fila of filasVisibles(); track fila.claseId) {
+            <tr>
+              <td>
+                <div class="tabla__materia">{{ fila.materiaCodigo }} — {{ fila.materiaNombre }}</div>
+                <div class="tabla__subdato">Clase {{ fila.nroClase }}</div>
+              </td>
+              <td>{{ fila.facultad || '—' }}</td>
+              <td>{{ fila.sedeNombre }}</td>
+              <td>{{ fila.aulaCodigo || 'Sin asignar' }}</td>
+              <td>{{ fila.turno }}</td>
+              <td>{{ fila.horarioDesde }} - {{ fila.horarioHasta }}</td>
+              <td>{{ fila.dias?.join(', ') || '—' }}</td>
+              <td>{{ fila.inscriptos }}</td>
+              <td [class.tabla__sillas--negativo]="fila.sillasVacias < 0">{{ fila.sillasVacias }}</td>
+              <td>{{ fila.docentes || '—' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>
+
+@if (panelCargaAbierto()) {
+  <div class="modal-overlay" (click)="cerrarPanelCarga()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h2>Cargar planificación desde Excel</h2>
+      <p class="modal__ayuda">
+        Elegí primero el cuatrimestre y año, para que no queden dudas de a qué período corresponde el archivo. Esto
+        va a <strong>reemplazar</strong> toda la planificación existente para ese período.
+      </p>
+
+      <div class="modal__campo">
+        <label for="carga-cuatrimestre">Cuatrimestre</label>
+        <select id="carga-cuatrimestre" name="cuatrimestre" [(ngModel)]="cuatrimestreSeleccionado">
+          <option value="1">1° Cuatrimestre</option>
+          <option value="2">2° Cuatrimestre</option>
+        </select>
+      </div>
+
+      <div class="modal__campo">
+        <label for="carga-anio">Año</label>
+        <input id="carga-anio" name="anio" type="number" [(ngModel)]="anioSeleccionado" min="2020" max="2100" />
+      </div>
+
+      <div class="modal__campo">
+        <label for="carga-archivo">Archivo Excel</label>
+        <input
+          id="carga-archivo"
+          name="archivo"
+          type="file"
+          accept=".xlsx,.xls"
+          (change)="onArchivoSeleccionado($event)"
+        />
+      </div>
+
+      @if (errorCarga()) {
+        <p class="modal__error">{{ errorCarga() }}</p>
+      }
+      @if (resultadoCarga()) {
+        <p class="modal__ok">✓ {{ resultadoCarga() }}</p>
+      }
+
+      <div class="modal__acciones">
+        <button type="button" class="btn" (click)="cerrarPanelCarga()" [disabled]="cargandoExcel()">Cerrar</button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          (click)="subirExcel()"
+          [disabled]="cargandoExcel() || !archivoSeleccionado"
+        >
+          {{ cargandoExcel() ? 'Subiendo...' : 'Subir y reemplazar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

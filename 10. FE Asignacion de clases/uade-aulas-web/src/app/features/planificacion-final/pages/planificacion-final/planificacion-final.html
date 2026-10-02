@@ -1,0 +1,288 @@
+<section class="dashboard">
+  <header class="dashboard__encabezado">
+    <div>
+      <h1>Planificación final</h1>
+      <p class="dashboard__ayuda">
+        Copia de trabajo editable de la programación. Agrupá, filtrá y ordená, y reasigná el aula de cualquier
+        clase directamente acá — el resultado se ve gráficamente en Mapa y se refleja en Aulas.
+      </p>
+    </div>
+    <div class="dashboard__encabezado-acciones">
+      @if (obtenerCambios() > 0) {
+        <button type="button" class="btn btn-primary" (click)="abrirConfirmacion()" [disabled]="grabando()">
+          {{ grabando() ? 'Grabando...' : 'Grabar ' + obtenerCambios() + ' cambio' + (obtenerCambios() !== 1 ? 's' : '') }}
+        </button>
+      }
+      <button type="button" class="btn" (click)="abrirModalFinalizar()">Finalizar planificación</button>
+    </div>
+  </header>
+
+  <form class="filtros" (ngSubmit)="buscar()">
+    <div class="filtros__campo">
+      <label for="pf-sede">Sede</label>
+      <select id="pf-sede" name="sede" [(ngModel)]="sedeSeleccionada" (change)="buscar()">
+        <option value="">Todas</option>
+        @for (sede of catalogos().sedes; track sede.id) {
+          <option [value]="sede.id">{{ sede.nombre }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="filtros__campo">
+      <label for="pf-turno">Turno</label>
+      <select id="pf-turno" name="turno" [(ngModel)]="turnoSeleccionado" (change)="buscar()">
+        <option value="">Todos</option>
+        <option value="MANANA">Mañana</option>
+        <option value="TARDE">Tarde</option>
+        <option value="NOCHE">Noche</option>
+      </select>
+    </div>
+
+    <div class="filtros__campo">
+      <label for="pf-facultad">Facultad</label>
+      <select id="pf-facultad" name="facultad" [(ngModel)]="facultadSeleccionada" (change)="buscar()">
+        <option value="">Todas</option>
+        @for (facultad of catalogos().facultades; track facultad) {
+          <option [value]="facultad">{{ facultad }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="filtros__campo filtros__campo--busqueda">
+      <label for="pf-busqueda">Búsqueda</label>
+      <input
+        id="pf-busqueda"
+        name="busqueda"
+        type="text"
+        placeholder="Materia, docente o aula... (sin importar acentos)"
+        list="pf-sugerencias"
+        [(ngModel)]="busqueda"
+      />
+      <datalist id="pf-sugerencias">
+        @for (sugerencia of sugerenciasBusqueda(); track sugerencia) {
+          <option [value]="sugerencia"></option>
+        }
+      </datalist>
+    </div>
+
+    <div class="filtros__acciones">
+      <button type="button" class="btn" (click)="limpiarFiltros()">Limpiar</button>
+    </div>
+  </form>
+
+  <div class="agrupador">
+    <span class="agrupador__etiqueta">Agrupar por:</span>
+    @for (campo of camposAgrupadores(); track campo.etiqueta; let i = $index) {
+      <label class="agrupador__chip" [class.agrupador__chip--activo]="i < nivelesActivos()">
+        <input type="checkbox" [checked]="i < nivelesActivos()" (change)="toggleNivel(i)" />
+        {{ campo.etiqueta }}
+      </label>
+    }
+  </div>
+
+  @if (error()) {
+    <p class="dashboard__error">{{ error() }}</p>
+  }
+
+  @if (cargando()) {
+    <p class="dashboard__estado">Cargando planificación...</p>
+  } @else if (!error() && filas().length === 0) {
+    <p class="dashboard__estado">No hay clases que coincidan con los filtros.</p>
+  } @else if (filasAgrupadas().length === 0) {
+    <p class="dashboard__estado">No hay clases que coincidan con la búsqueda.</p>
+  } @else {
+    <div class="dashboard__tabla-contenedor">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th class="tabla__th--ordenable" (click)="orden.ordenarPor('materiaNombre')">Materia {{ orden.indicador('materiaNombre') }}</th>
+            <th>Aula</th>
+            <th class="tabla__th--ordenable" (click)="orden.ordenarPor('aulaCapacidad')">Capacidad {{ orden.indicador('aulaCapacidad') }}</th>
+            <th class="tabla__th--ordenable" (click)="orden.ordenarPor('turno')">Turno {{ orden.indicador('turno') }}</th>
+            <th>Horario</th>
+            <th>Días</th>
+            <th class="tabla__th--ordenable" (click)="orden.ordenarPor('inscriptos')">Inscriptos {{ orden.indicador('inscriptos') }}</th>
+            <th class="tabla__th--ordenable" (click)="orden.ordenarPor('sillasVacias')">Sillas vacías {{ orden.indicador('sillasVacias') }}</th>
+            <th class="tabla__th--ordenable" (click)="orden.ordenarPor('docentes')">Docentes {{ orden.indicador('docentes') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of filasAgrupadas(); track $index) {
+            @if (item.tipo === 'grupo') {
+              <tr class="tabla__fila-grupo">
+                <td colspan="9" [style.paddingLeft.px]="16 + item.nivel * 20">
+                  {{ item.etiqueta }} <span class="tabla__grupo-cantidad">({{ item.cantidad }})</span>
+                </td>
+              </tr>
+            } @else {
+              <tr [class.tabla__fila--modificada]="filasOriginales.get(item.fila.claseId)?.aulaId !== item.fila.aulaId">
+                <td>
+                  <div class="tabla__materia">{{ item.fila.materiaCodigo }} — {{ item.fila.materiaNombre }}</div>
+                  <div class="tabla__subdato">Clase {{ item.fila.nroClase }}</div>
+                </td>
+                <td>
+                  <button type="button" class="tabla__btn-aula" (click)="abrirSelectorAula(item.fila)">
+                    {{ codigoAulaActual(item.fila) }}
+                  </button>
+                </td>
+                <td>{{ capacidadAulaActual(item.fila) }}</td>
+                <td>{{ item.fila.turno }}</td>
+                <td>{{ item.fila.horarioDesde }} - {{ item.fila.horarioHasta }}</td>
+                <td>{{ item.fila.dias?.join(', ') || '—' }}</td>
+                <td>{{ item.fila.inscriptos }}</td>
+                <td [class.tabla__sillas--negativo]="item.fila.sillasVacias < 0">{{ item.fila.sillasVacias }}</td>
+                <td>{{ item.fila.docentes || '—' }}</td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (resultadoGrabado()) {
+      <div class="resultado">
+        <h3>Cambios grabados</h3>
+        @if (resultadoGrabado()!.choques.length === 0 && resultadoGrabado()!.sobrecupo.length === 0) {
+          <p class="resultado__ok">✓ Sin conflictos.</p>
+        }
+        @if (resultadoGrabado()!.choques.length > 0) {
+          <div class="resultado__seccion">
+            <h4>⚠️ Choques encontrados (conflictos horarios):</h4>
+            <ul class="resultado__lista">
+              @for (choque of resultadoGrabado()!.choques; track choque.claseId) {
+                <li>
+                  <strong>{{ choque.materia }} - Clase {{ choque.nroClase }}</strong> en aula
+                  <strong>{{ choque.aulaCodigo }}</strong> {{ choque.horario }}: {{ choque.motivo }}
+                </li>
+              }
+            </ul>
+          </div>
+        }
+        @if (resultadoGrabado()!.sobrecupo.length > 0) {
+          <div class="resultado__seccion">
+            <h4>⚠️ Sobrecupo encontrado:</h4>
+            <ul class="resultado__lista">
+              @for (sobre of resultadoGrabado()!.sobrecupo; track sobre.claseId) {
+                <li>
+                  <strong>{{ sobre.materia }} - Clase {{ sobre.nroClase }}</strong>:
+                  {{ sobre.inscriptos }} inscriptos vs {{ sobre.capacidadAula }} asientos
+                  (faltan {{ sobre.exceso }} sillas)
+                </li>
+              }
+            </ul>
+          </div>
+        }
+      </div>
+    }
+  }
+</section>
+
+@if (modalConfirmacionAbierto()) {
+  <div class="modal-overlay" (click)="cerrarModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h2>Confirmar cambios</h2>
+      <p>Se grabarán <strong>{{ obtenerCambios() }}</strong> cambio{{ obtenerCambios() !== 1 ? 's' : '' }} en la asignación de aulas.</p>
+      <div class="modal__acciones">
+        <button type="button" class="btn" (click)="cerrarModal()" [disabled]="grabando()">Cancelar</button>
+        <button type="button" class="btn btn-primary" (click)="grabar()" [disabled]="grabando()">
+          {{ grabando() ? 'Grabando...' : 'Grabar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (filaSeleccionAula(); as fila) {
+  <div class="modal-overlay" (click)="cerrarSelectorAula()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h2>Elegir aula para {{ fila.materiaCodigo }}</h2>
+      <p class="modal__ayuda">
+        Clase {{ fila.nroClase }} · {{ fila.sedeNombre }}. Elegí edificio y piso primero — las opciones de aula
+        quedan acotadas a eso.
+      </p>
+
+      <div class="modal__campo">
+        <label for="pf-edificio-modal">Edificio</label>
+        <select id="pf-edificio-modal" name="edificioModal" [(ngModel)]="edificioSeleccionModal" (change)="onCambioEdificioModal()">
+          <option value="">Elegí un edificio...</option>
+          @for (edificio of edificiosSeleccionModal(); track edificio) {
+            <option [value]="edificio">{{ edificio }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="modal__campo">
+        <label for="pf-piso-modal">Piso</label>
+        <select
+          id="pf-piso-modal"
+          name="pisoModal"
+          [(ngModel)]="pisoSeleccionModal"
+          (change)="onCambioPisoModal()"
+          [disabled]="!edificioSeleccionModal && !sinEdificiosModal()"
+        >
+          <option value="">Elegí un piso...</option>
+          @for (piso of pisosSeleccionModal(); track piso) {
+            <option [value]="piso">Piso {{ piso }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="modal__campo">
+        <label for="pf-aula-modal">Aula</label>
+        <select id="pf-aula-modal" name="aulaModal" [(ngModel)]="aulaSeleccionModal" [disabled]="pisoSeleccionModal === ''">
+          <option value="">Elegí un aula...</option>
+          @for (aula of aulasSeleccionModal(); track aula.id) {
+            <option [value]="aula.id">{{ aula.codigo }} (cap. {{ aula.capacidadReal }})</option>
+          }
+        </select>
+      </div>
+
+      <div class="modal__acciones">
+        <button type="button" class="btn" (click)="quitarAulaSeleccionModal()">Quitar aula</button>
+        <button type="button" class="btn" (click)="cerrarSelectorAula()">Cancelar</button>
+        <button type="button" class="btn btn-primary" (click)="confirmarSelectorAula()" [disabled]="!aulaSeleccionModal">
+          Confirmar
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (modalFinalizarAbierto()) {
+  <div class="modal-overlay" (click)="cerrarModalFinalizar()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h2>Finalizar planificación</h2>
+      <p class="modal__ayuda">
+        Esto guarda el estado actual de esta pantalla como un período nuevo, cerrado. Elegí a qué cuatrimestre/año
+        corresponde el resultado.
+      </p>
+
+      <div class="modal__campo">
+        <label for="pf-cuatrimestre-final">Cuatrimestre</label>
+        <select id="pf-cuatrimestre-final" name="cuatrimestreFinal" [(ngModel)]="cuatrimestreFinal">
+          <option value="1">1° Cuatrimestre</option>
+          <option value="2">2° Cuatrimestre</option>
+        </select>
+      </div>
+
+      <div class="modal__campo">
+        <label for="pf-anio-final">Año</label>
+        <input id="pf-anio-final" name="anioFinal" type="number" [(ngModel)]="anioFinal" min="2020" max="2100" />
+      </div>
+
+      @if (errorFinalizar()) {
+        <p class="modal__error">{{ errorFinalizar() }}</p>
+      }
+      @if (resultadoFinalizar()) {
+        <p class="modal__ok">✓ {{ resultadoFinalizar() }}</p>
+      }
+
+      <div class="modal__acciones">
+        <button type="button" class="btn" (click)="cerrarModalFinalizar()" [disabled]="finalizando()">Cerrar</button>
+        <button type="button" class="btn btn-primary" (click)="finalizarPlanificacion()" [disabled]="finalizando()">
+          {{ finalizando() ? 'Finalizando...' : 'Finalizar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

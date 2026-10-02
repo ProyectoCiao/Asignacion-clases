@@ -1,0 +1,183 @@
+.mapa {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mapa__encabezado h1 {
+  margin: 0;
+}
+
+.mapa__ayuda {
+  margin: 4px 0 0;
+  color: var(--color-muted);
+  font-size: 14px;
+}
+
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 12px;
+  padding: 16px;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.filtros__campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 160px;
+}
+
+.filtros__campo label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+.filtros__campo select {
+  min-height: 40px;
+  padding: 0 10px;
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.mapa__error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+  border-radius: 6px;
+  margin: 0;
+}
+
+.mapa__estado {
+  color: var(--color-muted);
+  margin: 0;
+}
+
+.mapa__grilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(480px, 1fr));
+  gap: 24px;
+}
+
+.aula-card {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 28px;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.aula-card--libre {
+  border-style: dashed;
+}
+
+.aula-card__encabezado {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.aula-card__codigo {
+  font-weight: 700;
+  font-size: 30px;
+}
+
+.aula-card__tipo {
+  font-size: 20px;
+  color: var(--color-muted);
+  text-transform: uppercase;
+}
+
+.aula-card__clase {
+  min-height: 70px;
+}
+
+.aula-card__materia {
+  font-weight: 600;
+  font-size: 26px;
+}
+
+.aula-card__turno {
+  display: inline-block;
+  margin-left: 10px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+
+.aula-card__subdato {
+  font-size: 22px;
+  color: var(--color-muted);
+}
+
+.aula-card__clase--vacia {
+  font-size: 22px;
+  color: var(--color-muted);
+  font-style: italic;
+}
+
+.aula-card__pizarra {
+  height: 22px;
+  width: 80%;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-text);
+  color: var(--color-card);
+  clip-path: polygon(12% 0%, 88% 0%, 100% 100%, 0% 100%);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.aula-card__sillas {
+  display: grid;
+  gap: 6px;
+  justify-content: center;
+}
+
+.silla {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  background: #48e120;
+  border: 1px solid #38b31a;
+}
+
+.silla--ocupada {
+  background-color: #9ca3af;
+  background-image:
+    linear-gradient(45deg, #6b7280 25%, transparent 25%, transparent 75%, #6b7280 75%, #6b7280),
+    linear-gradient(45deg, #6b7280 25%, transparent 25%, transparent 75%, #6b7280 75%, #6b7280);
+  background-size: 8px 8px;
+  background-position: 0 0, 4px 4px;
+  border-color: #6b7280;
+}
+
+.aula-card__resumen {
+  font-size: 22px;
+  color: var(--color-muted);
+  text-align: center;
+}
+

@@ -1,0 +1,102 @@
+<section class="mapa">
+  <header class="mapa__encabezado">
+    <div>
+      <h1>Mapa de aulas</h1>
+      <p class="mapa__ayuda">
+        Vista tipo cine: cada cuadradito es una silla. Solo lectura — la edición se hace desde Planificación final.
+      </p>
+    </div>
+  </header>
+
+  <form class="filtros" (ngSubmit)="buscar()">
+    <div class="filtros__campo">
+      <label for="mapa-sede">Sede</label>
+      <select id="mapa-sede" name="sede" [(ngModel)]="sedeSeleccionada" (change)="onCambioSede()">
+        @for (sede of sedes(); track sede.id) {
+          <option [value]="sede.id">{{ sede.nombre }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="filtros__campo">
+      <label for="mapa-piso">Piso</label>
+      <select id="mapa-piso" name="piso" [(ngModel)]="pisoSeleccionado" (change)="buscar()">
+        @for (piso of pisosDisponibles(); track piso) {
+          <option [value]="piso">Piso {{ piso }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="filtros__campo">
+      <label for="mapa-turno">Turno</label>
+      <select id="mapa-turno" name="turno" [(ngModel)]="turnoSeleccionado" (change)="buscar()">
+        <option value="">Todos</option>
+        <option value="MANANA">Mañana</option>
+        <option value="TARDE">Tarde</option>
+        <option value="NOCHE">Noche</option>
+      </select>
+    </div>
+
+    <div class="filtros__campo">
+      <label for="mapa-dia">Día</label>
+      <select id="mapa-dia" name="dia" [(ngModel)]="diaSeleccionado" (change)="buscar()">
+        <option value="">Todos</option>
+        @for (dia of dias; track dia) {
+          <option [value]="dia">{{ dia }}</option>
+        }
+      </select>
+    </div>
+  </form>
+
+  @if (error()) {
+    <div class="mapa__error">
+      <span>{{ error() }}</span>
+      <button type="button" class="btn" (click)="reintentar()">Reintentar</button>
+    </div>
+  }
+
+  @if (cargando()) {
+    <p class="mapa__estado">Cargando mapa...</p>
+  } @else if (!error() && aulasMapa().length === 0) {
+    <p class="mapa__estado">No hay aulas para mostrar con estos filtros.</p>
+  } @else {
+    <div class="mapa__grilla">
+      @for (aula of aulasMapa(); track aula.aulaId) {
+        <div class="aula-card" [class.aula-card--libre]="aula.claseNro == null">
+          <div class="aula-card__encabezado">
+            <span class="aula-card__codigo">{{ aula.codigo }}</span>
+            <span class="aula-card__tipo">{{ aula.tipoGrupo }}</span>
+          </div>
+
+          @if (aula.claseNro != null) {
+            <div class="aula-card__clase">
+              <div class="aula-card__materia">
+                {{ aula.materia }}
+                @if (turnoDeAula(aula)) {
+                  <span class="aula-card__turno">{{ turnoDeAula(aula) }}</span>
+                }
+              </div>
+              <div class="aula-card__subdato">Clase {{ aula.claseNro }} · {{ aula.horario }}</div>
+              @if (aula.docentes) {
+                <div class="aula-card__subdato">{{ aula.docentes }}</div>
+              }
+            </div>
+          } @else {
+            <div class="aula-card__clase aula-card__clase--vacia">Sin clase asignada</div>
+          }
+
+          <div class="aula-card__pizarra">Pizarra</div>
+          <div class="aula-card__sillas" [style.grid-template-columns]="'repeat(' + columnas(capacidadReal(aula)) + ', 1fr)'">
+            @for (ocupada of sillas(aula); track $index) {
+              <span class="silla" [class.silla--ocupada]="ocupada"></span>
+            }
+          </div>
+
+          <div class="aula-card__resumen">
+            {{ aula.ocupados }} ocupados · {{ sillasVacias(aula) }} libres
+          </div>
+        </div>
+      }
+    </div>
+  }
+</section>

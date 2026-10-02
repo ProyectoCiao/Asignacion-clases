@@ -1,0 +1,119 @@
+<section class="dashboard">
+  <header class="dashboard__encabezado">
+    <div>
+      <h1>Docentes</h1>
+      <p class="dashboard__ayuda">
+        Qué está dictando cada docente actualmente, con las modificaciones ya hechas desde Mapa. Solo lectura —
+        agrupá, filtrá y ordená para verificar que quedó como esperabas.
+      </p>
+    </div>
+  </header>
+
+  <form class="filtros" (ngSubmit)="buscar()">
+    <div class="filtros__campo">
+      <label for="docentes-sede">Sede</label>
+      <select id="docentes-sede" name="sede" [(ngModel)]="sedeSeleccionada" (change)="buscar()">
+        <option value="">Todas</option>
+        @for (sede of catalogos().sedes; track sede.id) {
+          <option [value]="sede.id">{{ sede.nombre }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="filtros__campo">
+      <label for="docentes-turno">Turno</label>
+      <select id="docentes-turno" name="turno" [(ngModel)]="turnoSeleccionado" (change)="buscar()">
+        <option value="">Todos</option>
+        <option value="MANANA">Mañana</option>
+        <option value="TARDE">Tarde</option>
+        <option value="NOCHE">Noche</option>
+      </select>
+    </div>
+
+    <div class="filtros__campo">
+      <label for="docentes-facultad">Facultad</label>
+      <select id="docentes-facultad" name="facultad" [(ngModel)]="facultadSeleccionada" (change)="buscar()">
+        <option value="">Todas</option>
+        @for (facultad of catalogos().facultades; track facultad) {
+          <option [value]="facultad">{{ facultad }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="filtros__campo filtros__campo--busqueda">
+      <label for="docentes-busqueda">Búsqueda</label>
+      <input
+        id="docentes-busqueda"
+        name="busqueda"
+        type="text"
+        placeholder="Materia, docente o aula..."
+        [(ngModel)]="busqueda"
+      />
+    </div>
+
+    <div class="filtros__acciones">
+      <button type="submit" class="btn btn-primary">Buscar</button>
+      <button type="button" class="btn" (click)="limpiarFiltros()">Limpiar</button>
+    </div>
+  </form>
+
+  <div class="agrupador">
+    <span class="agrupador__etiqueta">Agrupar por:</span>
+    @for (campo of camposAgrupadores; track campo.etiqueta; let i = $index) {
+      <label class="agrupador__chip" [class.agrupador__chip--activo]="i < nivelesActivos()">
+        <input type="checkbox" [checked]="i < nivelesActivos()" (change)="toggleNivel(i)" />
+        {{ campo.etiqueta }}
+      </label>
+    }
+  </div>
+
+  @if (error()) {
+    <p class="dashboard__error">{{ error() }}</p>
+  }
+
+  @if (cargando()) {
+    <p class="dashboard__estado">Cargando docentes...</p>
+  } @else if (!error() && filas().length === 0) {
+    <p class="dashboard__estado">No hay clases que coincidan con los filtros.</p>
+  } @else {
+    <div class="dashboard__tabla-contenedor">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th class="tabla__th--ordenable" (click)="orden.ordenarPor('docentes')">Docente(s) {{ orden.indicador('docentes') }}</th>
+            <th class="tabla__th--ordenable" (click)="orden.ordenarPor('materiaNombre')">Materia {{ orden.indicador('materiaNombre') }}</th>
+            <th class="tabla__th--ordenable" (click)="orden.ordenarPor('sedeNombre')">Sede {{ orden.indicador('sedeNombre') }}</th>
+            <th class="tabla__th--ordenable" (click)="orden.ordenarPor('aulaCodigo')">Aula {{ orden.indicador('aulaCodigo') }}</th>
+            <th class="tabla__th--ordenable" (click)="orden.ordenarPor('turno')">Turno {{ orden.indicador('turno') }}</th>
+            <th>Horario</th>
+            <th>Días</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of filasAgrupadas(); track $index) {
+            @if (item.tipo === 'grupo') {
+              <tr class="tabla__fila-grupo">
+                <td colspan="7" [style.paddingLeft.px]="16 + item.nivel * 20">
+                  {{ item.etiqueta }} <span class="tabla__grupo-cantidad">({{ item.cantidad }})</span>
+                </td>
+              </tr>
+            } @else {
+              <tr>
+                <td>{{ item.fila.docentes || '—' }}</td>
+                <td>
+                  <div class="tabla__materia">{{ item.fila.materiaCodigo }} — {{ item.fila.materiaNombre }}</div>
+                  <div class="tabla__subdato">Clase {{ item.fila.nroClase }}</div>
+                </td>
+                <td>{{ item.fila.sedeNombre }}</td>
+                <td>{{ item.fila.aulaCodigo || 'Sin asignar' }}</td>
+                <td>{{ item.fila.turno }}</td>
+                <td>{{ item.fila.horarioDesde }} - {{ item.fila.horarioHasta }}</td>
+                <td>{{ item.fila.dias?.join(', ') || '—' }}</td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>
