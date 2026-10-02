@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx ng *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "PowerShell(Invoke-WebRequest -Uri \"http://localhost:5080/demanda\" -Method Get)",
+      "PowerShell(Invoke-WebRequest -Uri \"http://localhost:5080/oferta/catalogos\" -Method Get)",
+      "Bash(ng build *)",
+      "Bash(npx tsc *)",
+      "PowerShell(try { \\(Invoke-WebRequest -Uri \"http://localhost:4200\" -UseBasicParsing\\).StatusCode } catch { \"no responde: $_\" })",
+      "Read(//c/Emi/10. BE Asignacion de clases/**)",
+      "PowerShell(try { \\(Invoke-WebRequest -Uri \"http://localhost:4200/mapa\" -UseBasicParsing\\).StatusCode } catch { \"no responde: $_\" })",
+      "PowerShell(cd \"C:\\\\Emi\\\\10. FE Asignacion de clases\\\\uade-aulas-web\"; npx tsc --noEmit -p tsconfig.app.json; if \\($?\\) { try { \\(Invoke-WebRequest -Uri \"http://localhost:4200/mapa\" -UseBasicParsing\\).StatusCode } catch { \"no responde: $_\" } })",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://localhost:5080/oferta/catalogos\" -UseBasicParsing; \"$\\($r.StatusCode\\) - $\\($r.Content.Substring\\(0, [Math]::Min\\(300, $r.Content.Length\\)\\)\\)\" } catch { \"ERROR: $\\($_.Exception.Message\\)\" })",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://localhost:4200/api/oferta/catalogos\" -UseBasicParsing; \"$\\($r.StatusCode\\) - $\\($r.Content.Substring\\(0, [Math]::Min\\(300, $r.Content.Length\\)\\)\\)\" } catch { \"ERROR: $\\($_.Exception.Message\\)\" })",
+      "PowerShell($r = Invoke-WebRequest -Uri \"http://localhost:4200/api/oferta/catalogos\" -UseBasicParsing; $r.Content | Out-File -FilePath \"$env:TEMP\\\\catalogos.json\" -Encoding utf8; \\($r.Content | ConvertFrom-Json\\).aulas | Select-Object -First 3 | ConvertTo-Json -Depth 5)",
+      "PowerShell(try { \\(Invoke-WebRequest -Uri \"http://localhost:4200/\" -UseBasicParsing\\).StatusCode } catch { \"no responde: $_\" })",
+      "PowerShell(try { \\(Invoke-WebRequest -Uri \"http://localhost:4200/aulas\" -UseBasicParsing\\).StatusCode } catch { \"no responde: $_\" })"
+    ]
+  }
+}
