@@ -1,0 +1,225 @@
+﻿-- Script para resetear la BD - Solo tablas necesarias para MVP
+-- Autor: Assistant
+-- Fecha: 2026-09-14
+
+-- DROP de tablas existentes (en orden de dependencia)
+DROP TABLE IF EXISTS clase CASCADE;
+DROP TABLE IF EXISTS periodo CASCADE;
+DROP TABLE IF EXISTS sede CASCADE;
+DROP TABLE IF EXISTS materia CASCADE;
+
+-- Crear tabla: SEDE
+CREATE TABLE sede (
+	id SERIAL PRIMARY KEY,
+	codigo VARCHAR(50) NOT NULL UNIQUE,
+	nombre VARCHAR(255) NOT NULL
+);
+
+-- Crear tabla: PERIODO
+CREATE TABLE periodo (
+	id SERIAL PRIMARY KEY,
+	ciclo VARCHAR(50) NOT NULL,
+	nombre VARCHAR(255) NOT NULL,
+	fecha_desde DATE NOT NULL,
+	fecha_hasta DATE NOT NULL
+);
+
+-- Crear tabla: MATERIA
+CREATE TABLE materia (
+	codigo VARCHAR(50) PRIMARY KEY,
+	nombre VARCHAR(255) NOT NULL,
+	facultad VARCHAR(255),
+	departamento VARCHAR(255),
+	carga_horaria INT DEFAULT 0
+);
+
+-- Crear tabla: CLASE
+CREATE TABLE clase (
+	id BIGSERIAL PRIMARY KEY,
+	nro_clase VARCHAR(100) NOT NULL,
+	periodo_id INT NOT NULL REFERENCES periodo(id),
+	sede_id INT NOT NULL REFERENCES sede(id),
+	materia_codigo VARCHAR(50) NOT NULL REFERENCES materia(codigo),
+	turno VARCHAR(50) NOT NULL,
+	dias TEXT[],
+	horario_desde TIME NOT NULL,
+	horario_hasta TIME NOT NULL,
+	inscriptos INT DEFAULT 0,
+	inscriptos_con_reserva INT NOT NULL,
+	aula_id INT,
+	docente_id INT
+);
+
+-- ==================== INSERTAR DATOS ====================
+
+-- SEDES
+INSERT INTO sede (codigo, nombre) VALUES
+('CENTRO', 'UADE Centro'),
+('BELGRANO', 'UADE Belgrano'),
+('FLORES', 'UADE Flores');
+
+-- PERIODOS
+INSERT INTO periodo (ciclo, nombre, fecha_desde, fecha_hasta) VALUES
+('2024-1', 'Primer Cuatrimestre 2024', '2024-02-01', '2024-05-31'),
+('2024-2', 'Segundo Cuatrimestre 2024', '2024-08-01', '2024-11-30'),
+('2025-1', 'Primer Cuatrimestre 2025', '2025-02-01', '2025-05-31');
+
+-- MATERIAS
+INSERT INTO materia (codigo, nombre, facultad, departamento, carga_horaria) VALUES
+('PROG101', 'Programación I', 'Ingeniería', 'Sistemas', 80),
+('PROG102', 'Programación II', 'Ingeniería', 'Sistemas', 80),
+('BD101', 'Base de Datos I', 'Ingeniería', 'Sistemas', 64),
+('BD102', 'Base de Datos II', 'Ingeniería', 'Sistemas', 64),
+('ALGO101', 'Algoritmos', 'Ingeniería', 'Sistemas', 80),
+('WEB101', 'Desarrollo Web', 'Ingeniería', 'Sistemas', 80),
+('MATH101', 'Matemática Discreta', 'Ingeniería', 'Matemática', 96),
+('STAT101', 'Estadística', 'Ingeniería', 'Matemática', 64),
+('ARCH101', 'Arquitectura de Software', 'Ingeniería', 'Sistemas', 48),
+('PROJ101', 'Gestión de Proyectos', 'Administración', 'General', 48),
+('REDES101', 'Redes de Computadoras', 'Ingeniería', 'Sistemas', 64),
+('MOBILE101', 'Desarrollo Mobile', 'Ingeniería', 'Sistemas', 80),
+('CLOUD101', 'Cloud Computing', 'Ingeniería', 'Sistemas', 48),
+('SECURITY101', 'Seguridad Informática', 'Ingeniería', 'Sistemas', 64),
+('DEVOPS101', 'DevOps y CI/CD', 'Ingeniería', 'Sistemas', 48);
+
+-- ==================== INSERTAR CLASES (APROXIMADAMENTE 100) ====================
+
+-- Periodo 2024-1, Sede Centro
+INSERT INTO clase (nro_clase, periodo_id, sede_id, materia_codigo, turno, dias, horario_desde, horario_hasta, inscriptos, inscriptos_con_reserva) VALUES
+('PROG101-001', 1, 1, 'PROG101', 'MANANA', ARRAY['Lunes', 'Miércoles'], '08:00', '10:00', 18, 16),
+('PROG101-002', 1, 1, 'PROG101', 'MANANA', ARRAY['Martes', 'Jueves'], '10:30', '12:30', 19, 17),
+('PROG101-003', 1, 1, 'PROG101', 'TARDE', ARRAY['Lunes', 'Miércoles'], '14:00', '16:00', 20, 18),
+('PROG101-004', 1, 1, 'PROG101', 'TARDE', ARRAY['Martes', 'Jueves'], '16:30', '18:30', 17, 15),
+('PROG101-005', 1, 1, 'PROG101', 'NOCHE', ARRAY['Lunes', 'Miércoles'], '19:00', '21:00', 15, 13),
+('BD101-001', 1, 1, 'BD101', 'MANANA', ARRAY['Martes', 'Jueves'], '08:00', '10:00', 16, 14),
+('BD101-002', 1, 1, 'BD101', 'TARDE', ARRAY['Lunes', 'Miércoles'], '14:00', '16:00', 18, 16),
+('BD101-003', 1, 1, 'BD101', 'NOCHE', ARRAY['Martes', 'Jueves'], '19:00', '21:00', 14, 12),
+('ALGO101-001', 1, 1, 'ALGO101', 'MANANA', ARRAY['Lunes', 'Miércoles', 'Viernes'], '10:30', '12:30', 19, 17),
+('ALGO101-002', 1, 1, 'ALGO101', 'TARDE', ARRAY['Martes', 'Jueves'], '14:00', '16:00', 20, 18),
+('WEB101-001', 1, 1, 'WEB101', 'MANANA', ARRAY['Martes', 'Jueves'], '08:00', '10:00', 17, 15),
+('WEB101-002', 1, 1, 'WEB101', 'TARDE', ARRAY['Lunes', 'Miércoles'], '16:30', '18:30', 19, 17),
+('MATH101-001', 1, 1, 'MATH101', 'MANANA', ARRAY['Lunes', 'Miércoles', 'Viernes'], '08:00', '10:00', 20, 18),
+('MATH101-002', 1, 1, 'MATH101', 'TARDE', ARRAY['Martes', 'Jueves'], '14:00', '16:00', 18, 16),
+('STAT101-001', 1, 1, 'STAT101', 'NOCHE', ARRAY['Lunes', 'Miércoles'], '19:00', '21:00', 16, 14),
+('ARCH101-001', 1, 1, 'ARCH101', 'MANANA', ARRAY['Viernes'], '08:00', '12:00', 15, 13),
+('PROJ101-001', 1, 1, 'PROJ101', 'TARDE', ARRAY['Jueves'], '14:00', '18:00', 17, 15),
+('REDES101-001', 1, 1, 'REDES101', 'MANANA', ARRAY['Martes', 'Jueves'], '10:30', '12:30', 18, 16),
+('MOBILE101-001', 1, 1, 'MOBILE101', 'TARDE', ARRAY['Lunes', 'Miércoles'], '14:00', '16:00', 19, 17),
+('CLOUD101-001', 1, 1, 'CLOUD101', 'NOCHE', ARRAY['Martes', 'Jueves'], '19:00', '21:00', 14, 12),
+
+-- Periodo 2024-1, Sede Belgrano
+('PROG101-006', 1, 2, 'PROG101', 'MANANA', ARRAY['Lunes', 'Miércoles'], '08:00', '10:00', 16, 14),
+('PROG101-007', 1, 2, 'PROG101', 'TARDE', ARRAY['Martes', 'Jueves'], '14:00', '16:00', 18, 16),
+('PROG102-001', 1, 2, 'PROG102', 'MANANA', ARRAY['Martes', 'Jueves'], '10:30', '12:30', 17, 15),
+('PROG102-002', 1, 2, 'PROG102', 'TARDE', ARRAY['Lunes', 'Miércoles'], '16:30', '18:30', 19, 17),
+('BD101-004', 1, 2, 'BD101', 'MANANA', ARRAY['Lunes', 'Miércoles'], '08:00', '10:00', 15, 13),
+('BD102-001', 1, 2, 'BD102', 'TARDE', ARRAY['Martes', 'Jueves'], '14:00', '16:00', 17, 15),
+('ALGO101-003', 1, 2, 'ALGO101', 'NOCHE', ARRAY['Lunes', 'Miércoles'], '19:00', '21:00', 13, 11),
+('WEB101-003', 1, 2, 'WEB101', 'MANANA', ARRAY['Viernes'], '08:00', '12:00', 16, 14),
+('MATH101-003', 1, 2, 'MATH101', 'TARDE', ARRAY['Martes', 'Jueves'], '14:00', '16:00', 18, 16),
+('STAT101-002', 1, 2, 'STAT101', 'MANANA', ARRAY['Lunes', 'Miércoles'], '10:30', '12:30', 19, 17),
+('SECURITY101-001', 1, 2, 'SECURITY101', 'NOCHE', ARRAY['Jueves'], '19:00', '21:00', 14, 12),
+('DEVOPS101-001', 1, 2, 'DEVOPS101', 'TARDE', ARRAY['Viernes'], '14:00', '18:00', 15, 13),
+('REDES101-002', 1, 2, 'REDES101', 'MANANA', ARRAY['Martes', 'Jueves'], '08:00', '10:00', 17, 15),
+('MOBILE101-002', 1, 2, 'MOBILE101', 'TARDE', ARRAY['Lunes', 'Miércoles'], '16:30', '18:30', 18, 16),
+('CLOUD101-002', 1, 2, 'CLOUD101', 'MANANA', ARRAY['Martes', 'Jueves'], '10:30', '12:30', 16, 14),
+
+-- Periodo 2024-1, Sede Flores
+('PROG101-008', 1, 3, 'PROG101', 'MANANA', ARRAY['Lunes', 'Miércoles'], '08:00', '10:00', 19, 17),
+('PROG102-003', 1, 3, 'PROG102', 'TARDE', ARRAY['Martes', 'Jueves'], '14:00', '16:00', 20, 18),
+('BD101-005', 1, 3, 'BD101', 'NOCHE', ARRAY['Lunes', 'Miércoles'], '19:00', '21:00', 15, 13),
+('ALGO101-004', 1, 3, 'ALGO101', 'MANANA', ARRAY['Martes', 'Jueves'], '10:30', '12:30', 17, 15),
+('WEB101-004', 1, 3, 'WEB101', 'TARDE', ARRAY['Lunes', 'Miércoles'], '14:00', '16:00', 18, 16),
+('MATH101-004', 1, 3, 'MATH101', 'NOCHE', ARRAY['Martes', 'Jueves'], '19:00', '21:00', 14, 12),
+('STAT101-003', 1, 3, 'STAT101', 'TARDE', ARRAY['Viernes'], '14:00', '16:00', 16, 14),
+('ARCH101-002', 1, 3, 'ARCH101', 'MANANA', ARRAY['Jueves'], '08:00', '12:00', 19, 17),
+('PROJ101-002', 1, 3, 'PROJ101', 'NOCHE', ARRAY['Martes'], '19:00', '21:00', 13, 11),
+('REDES101-003', 1, 3, 'REDES101', 'TARDE', ARRAY['Lunes', 'Miércoles'], '16:30', '18:30', 17, 15),
+
+-- Periodo 2024-2, Sede Centro
+('PROG101-009', 2, 1, 'PROG101', 'MANANA', ARRAY['Lunes', 'Miércoles'], '08:00', '10:00', 18, 16),
+('PROG102-004', 2, 1, 'PROG102', 'TARDE', ARRAY['Martes', 'Jueves'], '14:00', '16:00', 19, 17),
+('BD101-006', 2, 1, 'BD101', 'MANANA', ARRAY['Martes', 'Jueves'], '10:30', '12:30', 20, 18),
+('BD102-002', 2, 1, 'BD102', 'TARDE', ARRAY['Lunes', 'Miércoles'], '16:30', '18:30', 17, 15),
+('ALGO101-005', 2, 1, 'ALGO101', 'NOCHE', ARRAY['Martes', 'Jueves'], '19:00', '21:00', 15, 13),
+('WEB101-005', 2, 1, 'WEB101', 'MANANA', ARRAY['Lunes', 'Miércoles', 'Viernes'], '08:00', '10:00', 16, 14),
+('MATH101-005', 2, 1, 'MATH101', 'TARDE', ARRAY['Martes', 'Jueves'], '14:00', '16:00', 18, 16),
+('STAT101-004', 2, 1, 'STAT101', 'MANANA', ARRAY['Lunes', 'Miércoles'], '10:30', '12:30', 19, 17),
+('SECURITY101-002', 2, 1, 'SECURITY101', 'NOCHE', ARRAY['Viernes'], '19:00', '21:00', 14, 12),
+('DEVOPS101-002', 2, 1, 'DEVOPS101', 'TARDE', ARRAY['Jueves'], '14:00', '18:00', 15, 13),
+('MOBILE101-003', 2, 1, 'MOBILE101', 'MANANA', ARRAY['Martes', 'Jueves'], '08:00', '10:00', 17, 15),
+('CLOUD101-003', 2, 1, 'CLOUD101', 'TARDE', ARRAY['Lunes', 'Miércoles'], '14:00', '16:00', 18, 16),
+('REDES101-004', 2, 1, 'REDES101', 'NOCHE', ARRAY['Martes', 'Jueves'], '19:00', '21:00', 16, 14),
+('ARCH101-003', 2, 1, 'ARCH101', 'MANANA', ARRAY['Viernes'], '08:00', '12:00', 19, 17),
+('PROJ101-003', 2, 1, 'PROJ101', 'TARDE', ARRAY['Jueves'], '14:00', '18:00', 13, 11),
+
+-- Periodo 2024-2, Sede Belgrano
+('PROG101-010', 2, 2, 'PROG101', 'MANANA', ARRAY['Lunes', 'Miércoles'], '08:00', '10:00', 17, 15),
+('PROG102-005', 2, 2, 'PROG102', 'TARDE', ARRAY['Martes', 'Jueves'], '14:00', '16:00', 18, 16),
+('BD101-007', 2, 2, 'BD101', 'NOCHE', ARRAY['Lunes', 'Miércoles'], '19:00', '21:00', 20, 18),
+('BD102-003', 2, 2, 'BD102', 'MANANA', ARRAY['Martes', 'Jueves'], '10:30', '12:30', 15, 13),
+('ALGO101-006', 2, 2, 'ALGO101', 'TARDE', ARRAY['Lunes', 'Miércoles'], '14:00', '16:00', 19, 17),
+('WEB101-006', 2, 2, 'WEB101', 'MANANA', ARRAY['Viernes'], '08:00', '12:00', 16, 14),
+('MATH101-006', 2, 2, 'MATH101', 'NOCHE', ARRAY['Martes', 'Jueves'], '19:00', '21:00', 14, 12),
+('STAT101-005', 2, 2, 'STAT101', 'TARDE', ARRAY['Lunes', 'Miércoles'], '16:30', '18:30', 17, 15),
+('SECURITY101-003', 2, 2, 'SECURITY101', 'MANANA', ARRAY['Martes', 'Jueves'], '08:00', '10:00', 18, 16),
+('DEVOPS101-003', 2, 2, 'DEVOPS101', 'NOCHE', ARRAY['Jueves'], '19:00', '21:00', 15, 13),
+('MOBILE101-004', 2, 2, 'MOBILE101', 'TARDE', ARRAY['Lunes', 'Miércoles'], '14:00', '16:00', 19, 17),
+('CLOUD101-004', 2, 2, 'CLOUD101', 'MANANA', ARRAY['Martes', 'Jueves'], '10:30', '12:30', 16, 14),
+('REDES101-005', 2, 2, 'REDES101', 'TARDE', ARRAY['Viernes'], '14:00', '16:00', 17, 15),
+('ARCH101-004', 2, 2, 'ARCH101', 'NOCHE', ARRAY['Martes'], '19:00', '21:00', 14, 12),
+('PROJ101-004', 2, 2, 'PROJ101', 'MANANA', ARRAY['Lunes'], '08:00', '12:00', 15, 13),
+
+-- Periodo 2024-2, Sede Flores
+('PROG101-011', 2, 3, 'PROG101', 'TARDE', ARRAY['Martes', 'Jueves'], '14:00', '16:00', 18, 16),
+('PROG102-006', 2, 3, 'PROG102', 'NOCHE', ARRAY['Lunes', 'Miércoles'], '19:00', '21:00', 19, 17),
+('BD101-008', 2, 3, 'BD101', 'MANANA', ARRAY['Martes', 'Jueves'], '08:00', '10:00', 20, 18),
+('BD102-004', 2, 3, 'BD102', 'TARDE', ARRAY['Lunes', 'Miércoles'], '14:00', '16:00', 16, 14),
+('ALGO101-007', 2, 3, 'ALGO101', 'NOCHE', ARRAY['Martes', 'Jueves'], '19:00', '21:00', 17, 15),
+('WEB101-007', 2, 3, 'WEB101', 'MANANA', ARRAY['Lunes', 'Miércoles', 'Viernes'], '10:30', '12:30', 18, 16),
+('MATH101-007', 2, 3, 'MATH101', 'TARDE', ARRAY['Martes', 'Jueves'], '16:30', '18:30', 19, 17),
+('STAT101-006', 2, 3, 'STAT101', 'NOCHE', ARRAY['Lunes', 'Miércoles'], '19:00', '21:00', 15, 13),
+('SECURITY101-004', 2, 3, 'SECURITY101', 'MANANA', ARRAY['Viernes'], '08:00', '10:00', 16, 14),
+('DEVOPS101-004', 2, 3, 'DEVOPS101', 'TARDE', ARRAY['Miércoles'], '14:00', '18:00', 17, 15),
+
+-- Periodo 2025-1, Sede Centro
+('PROG101-012', 3, 1, 'PROG101', 'MANANA', ARRAY['Lunes', 'Miércoles'], '08:00', '10:00', 19, 17),
+('PROG102-007', 3, 1, 'PROG102', 'TARDE', ARRAY['Martes', 'Jueves'], '14:00', '16:00', 18, 16),
+('BD101-009', 3, 1, 'BD101', 'NOCHE', ARRAY['Lunes', 'Miércoles'], '19:00', '21:00', 20, 18),
+('BD102-005', 3, 1, 'BD102', 'MANANA', ARRAY['Martes', 'Jueves'], '10:30', '12:30', 17, 15),
+('ALGO101-008', 3, 1, 'ALGO101', 'TARDE', ARRAY['Lunes', 'Miércoles'], '14:00', '16:00', 15, 13),
+('WEB101-008', 3, 1, 'WEB101', 'NOCHE', ARRAY['Martes', 'Jueves'], '19:00', '21:00', 16, 14),
+('MATH101-008', 3, 1, 'MATH101', 'MANANA', ARRAY['Lunes', 'Miércoles', 'Viernes'], '08:00', '10:00', 19, 17),
+('STAT101-007', 3, 1, 'STAT101', 'TARDE', ARRAY['Martes', 'Jueves'], '14:00', '16:00', 18, 16),
+('SECURITY101-005', 3, 1, 'SECURITY101', 'MANANA', ARRAY['Viernes'], '08:00', '12:00', 14, 12),
+('DEVOPS101-005', 3, 1, 'DEVOPS101', 'NOCHE', ARRAY['Jueves'], '19:00', '21:00', 15, 13),
+
+-- Periodo 2025-1, Sede Belgrano
+('PROG101-013', 3, 2, 'PROG101', 'TARDE', ARRAY['Martes', 'Jueves'], '14:00', '16:00', 17, 15),
+('PROG102-008', 3, 2, 'PROG102', 'MANANA', ARRAY['Lunes', 'Miércoles'], '08:00', '10:00', 18, 16),
+('BD101-010', 3, 2, 'BD101', 'TARDE', ARRAY['Martes', 'Jueves'], '16:30', '18:30', 19, 17),
+('BD102-006', 3, 2, 'BD102', 'NOCHE', ARRAY['Lunes', 'Miércoles'], '19:00', '21:00', 20, 18),
+('ALGO101-009', 3, 2, 'ALGO101', 'MANANA', ARRAY['Viernes'], '08:00', '12:00', 16, 14),
+('WEB101-009', 3, 2, 'WEB101', 'TARDE', ARRAY['Lunes', 'Miércoles'], '14:00', '16:00', 17, 15),
+('MATH101-009', 3, 2, 'MATH101', 'NOCHE', ARRAY['Martes', 'Jueves'], '19:00', '21:00', 18, 16),
+('STAT101-008', 3, 2, 'STAT101', 'MANANA', ARRAY['Lunes', 'Miércoles'], '10:30', '12:30', 19, 17),
+('MOBILE101-005', 3, 2, 'MOBILE101', 'TARDE', ARRAY['Martes', 'Jueves'], '14:00', '16:00', 15, 13),
+('CLOUD101-005', 3, 2, 'CLOUD101', 'NOCHE', ARRAY['Lunes', 'Miércoles'], '19:00', '21:00', 16, 14),
+
+-- Periodo 2025-1, Sede Flores
+('PROG101-014', 3, 3, 'PROG101', 'MANANA', ARRAY['Martes', 'Jueves'], '08:00', '10:00', 17, 15),
+('PROG102-009', 3, 3, 'PROG102', 'TARDE', ARRAY['Lunes', 'Miércoles'], '16:30', '18:30', 18, 16),
+('BD101-011', 3, 3, 'BD101', 'MANANA', ARRAY['Lunes', 'Miércoles'], '10:30', '12:30', 19, 17),
+('BD102-007', 3, 3, 'BD102', 'NOCHE', ARRAY['Martes', 'Jueves'], '19:00', '21:00', 20, 18),
+('ALGO101-010', 3, 3, 'ALGO101', 'TARDE', ARRAY['Viernes'], '14:00', '16:00', 14, 12),
+('WEB101-010', 3, 3, 'WEB101', 'MANANA', ARRAY['Martes', 'Jueves'], '08:00', '10:00', 15, 13),
+('MATH101-010', 3, 3, 'MATH101', 'TARDE', ARRAY['Lunes', 'Miércoles'], '14:00', '16:00', 17, 15),
+('STAT101-009', 3, 3, 'STAT101', 'NOCHE', ARRAY['Martes', 'Jueves'], '19:00', '21:00', 18, 16),
+('ARCH101-005', 3, 3, 'ARCH101', 'MANANA', ARRAY['Jueves'], '08:00', '12:00', 16, 14),
+('REDES101-006', 3, 3, 'REDES101', 'TARDE', ARRAY['Lunes', 'Miércoles'], '14:00', '16:00', 19, 17);
+
+-- Verificar insert
+SELECT COUNT(*) as total_clases FROM clase;
+SELECT COUNT(*) as total_periodos FROM periodo;
+SELECT COUNT(*) as total_sedes FROM sede;
+SELECT COUNT(*) as total_materias FROM materia;

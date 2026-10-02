@@ -1,0 +1,520 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Emi\\10. BE Asignacion de clases\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\reset_db.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:UadeAulas.Api\\reset_db.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\emurbaneja\\.copilot\\plans\\plan-importacin-de-excels-(aulas,-materiascarreras,-alumnos)-planificacin-versionada.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|MarkdownSecurePreview"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\reset_db2.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:UadeAulas.Api\\reset_db2.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\emurbaneja\\.copilot\\plans\\plan-ajustes-de-datos-y-separacin-ofertademanda.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|MarkdownSecurePreview"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Emi\\10. BE Asignacion de clases\\uade-demanda\\references\\tablas.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:uade-demanda\\references\\tablas.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\reset_db.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:UadeAulas.Api\\reset_db.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Emi\\10. FE Asignacion de clases\\uade-aulas-web\\proxy.conf.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\reset_db2.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:UadeAulas.Api\\reset_db2.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Models\\Aula.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:UadeAulas.Api\\Models\\Aula.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Dtos\\AulaDto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:UadeAulas.Api\\Dtos\\AulaDto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Data\\Repository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:UadeAulas.Api\\Data\\Repository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Services\\CatalogService.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:UadeAulas.Api\\Services\\CatalogService.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Services\\OfertaService.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:UadeAulas.Api\\Services\\OfertaService.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Models\\Carrera.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:UadeAulas.Api\\Models\\Carrera.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Models\\Planificacion.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:UadeAulas.Api\\Models\\Planificacion.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Models\\MateriaCarrera.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:UadeAulas.Api\\Models\\MateriaCarrera.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Models\\DocenteMateria.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:UadeAulas.Api\\Models\\DocenteMateria.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Models\\Alumno.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:UadeAulas.Api\\Models\\Alumno.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Models\\InscripcionInteres.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:UadeAulas.Api\\Models\\InscripcionInteres.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Models\\Clase.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:UadeAulas.Api\\Models\\Clase.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Dtos\\ImportResultDto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:UadeAulas.Api\\Dtos\\ImportResultDto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Services\\AulaImportService.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:UadeAulas.Api\\Services\\AulaImportService.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Endpoints\\ImportEndpoints.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:UadeAulas.Api\\Endpoints\\ImportEndpoints.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:UadeAulas.Api\\Program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Emi\\10. BE Asignacion de clases\\TempExcelGen\\Program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:TempExcelGen\\Program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Emi\\10. BE Asignacion de clases\\TempExcelGen\\TempExcelGen.csproj||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:TempExcelGen\\TempExcelGen.csproj||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Services\\GrabarService.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:UadeAulas.Api\\Services\\GrabarService.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Services\\MateriaCarreraImportService.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:UadeAulas.Api\\Services\\MateriaCarreraImportService.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Services\\AlumnoImportService.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:UadeAulas.Api\\Services\\AlumnoImportService.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Dtos\\CargaPlanificacionResponseDto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:UadeAulas.Api\\Dtos\\CargaPlanificacionResponseDto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Endpoints\\PlanificacionEndpoints.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:UadeAulas.Api\\Endpoints\\PlanificacionEndpoints.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 29,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{40ea2e6b-2121-4bb8-a43e-c83c04b51041}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 28,
+              "Title": "AlumnoImportService.cs",
+              "DocumentMoniker": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Services\\AlumnoImportService.cs",
+              "RelativeDocumentMoniker": "UadeAulas.Api\\Services\\AlumnoImportService.cs",
+              "ToolTip": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Services\\AlumnoImportService.cs",
+              "RelativeToolTip": "UadeAulas.Api\\Services\\AlumnoImportService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAxwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-29T19:21:55.686Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "plan-importacin-de-excels-(aulas,-materiascarreras,-alumnos)-planificacin-versionada.md [Versi\u00F3n preliminar]",
+              "DocumentMoniker": "C:\\Users\\emurbaneja\\.copilot\\plans\\plan-importacin-de-excels-(aulas,-materiascarreras,-alumnos)-planificacin-versionada.md",
+              "RelativeDocumentMoniker": "..\\..\\Users\\emurbaneja\\.copilot\\plans\\plan-importacin-de-excels-(aulas,-materiascarreras,-alumnos)-planificacin-versionada.md",
+              "ToolTip": "C:\\Users\\emurbaneja\\.copilot\\plans\\plan-importacin-de-excels-(aulas,-materiascarreras,-alumnos)-planificacin-versionada.md [Versi\u00F3n preliminar]",
+              "RelativeToolTip": "..\\..\\Users\\emurbaneja\\.copilot\\plans\\plan-importacin-de-excels-(aulas,-materiascarreras,-alumnos)-planificacin-versionada.md [Versi\u00F3n preliminar]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2026-09-29T18:58:20.838Z",
+              "EditorCaption": " [Versi\u00F3n preliminar]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 30,
+              "Title": "PlanificacionEndpoints.cs",
+              "DocumentMoniker": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Endpoints\\PlanificacionEndpoints.cs",
+              "RelativeDocumentMoniker": "UadeAulas.Api\\Endpoints\\PlanificacionEndpoints.cs",
+              "ToolTip": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Endpoints\\PlanificacionEndpoints.cs",
+              "RelativeToolTip": "UadeAulas.Api\\Endpoints\\PlanificacionEndpoints.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAxwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-29T19:47:19.221Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 29,
+              "Title": "CargaPlanificacionResponseDto.cs",
+              "DocumentMoniker": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Dtos\\CargaPlanificacionResponseDto.cs",
+              "RelativeDocumentMoniker": "UadeAulas.Api\\Dtos\\CargaPlanificacionResponseDto.cs",
+              "ToolTip": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Dtos\\CargaPlanificacionResponseDto.cs",
+              "RelativeToolTip": "UadeAulas.Api\\Dtos\\CargaPlanificacionResponseDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAxwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-29T19:47:01.356Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "Planificacion.cs",
+              "DocumentMoniker": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Models\\Planificacion.cs",
+              "RelativeDocumentMoniker": "UadeAulas.Api\\Models\\Planificacion.cs",
+              "ToolTip": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Models\\Planificacion.cs",
+              "RelativeToolTip": "UadeAulas.Api\\Models\\Planificacion.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAxwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-29T17:58:06.514Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "Carrera.cs",
+              "DocumentMoniker": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Models\\Carrera.cs",
+              "RelativeDocumentMoniker": "UadeAulas.Api\\Models\\Carrera.cs",
+              "ToolTip": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Models\\Carrera.cs",
+              "RelativeToolTip": "UadeAulas.Api\\Models\\Carrera.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAxwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-29T17:58:03.491Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "plan-ajustes-de-datos-y-separacin-ofertademanda.md [Versi\u00F3n preliminar]",
+              "DocumentMoniker": "C:\\Users\\emurbaneja\\.copilot\\plans\\plan-ajustes-de-datos-y-separacin-ofertademanda.md",
+              "RelativeDocumentMoniker": "..\\..\\Users\\emurbaneja\\.copilot\\plans\\plan-ajustes-de-datos-y-separacin-ofertademanda.md",
+              "ToolTip": "C:\\Users\\emurbaneja\\.copilot\\plans\\plan-ajustes-de-datos-y-separacin-ofertademanda.md [Versi\u00F3n preliminar]",
+              "RelativeToolTip": "..\\..\\Users\\emurbaneja\\.copilot\\plans\\plan-ajustes-de-datos-y-separacin-ofertademanda.md [Versi\u00F3n preliminar]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2026-09-25T14:28:48.251Z",
+              "EditorCaption": " [Versi\u00F3n preliminar]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 27,
+              "Title": "MateriaCarreraImportService.cs",
+              "DocumentMoniker": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Services\\MateriaCarreraImportService.cs",
+              "RelativeDocumentMoniker": "UadeAulas.Api\\Services\\MateriaCarreraImportService.cs",
+              "ToolTip": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Services\\MateriaCarreraImportService.cs",
+              "RelativeToolTip": "UadeAulas.Api\\Services\\MateriaCarreraImportService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAxwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-29T18:04:20.001Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 26,
+              "Title": "GrabarService.cs",
+              "DocumentMoniker": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Services\\GrabarService.cs",
+              "RelativeDocumentMoniker": "UadeAulas.Api\\Services\\GrabarService.cs",
+              "ToolTip": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Services\\GrabarService.cs",
+              "RelativeToolTip": "UadeAulas.Api\\Services\\GrabarService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAxwMEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-29T18:02:28.188Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 25,
+              "Title": "TempExcelGen.csproj",
+              "DocumentMoniker": "C:\\Emi\\10. BE Asignacion de clases\\TempExcelGen\\TempExcelGen.csproj",
+              "RelativeDocumentMoniker": "TempExcelGen\\TempExcelGen.csproj",
+              "ToolTip": "C:\\Emi\\10. BE Asignacion de clases\\TempExcelGen\\TempExcelGen.csproj",
+              "RelativeToolTip": "TempExcelGen\\TempExcelGen.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-09-29T18:01:06.619Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 24,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Emi\\10. BE Asignacion de clases\\TempExcelGen\\Program.cs",
+              "RelativeDocumentMoniker": "TempExcelGen\\Program.cs",
+              "ToolTip": "C:\\Emi\\10. BE Asignacion de clases\\TempExcelGen\\Program.cs",
+              "RelativeToolTip": "TempExcelGen\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-29T18:01:03.139Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 23,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Program.cs",
+              "RelativeDocumentMoniker": "UadeAulas.Api\\Program.cs",
+              "ToolTip": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Program.cs",
+              "RelativeToolTip": "UadeAulas.Api\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAxwEAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-29T18:00:29.138Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 22,
+              "Title": "ImportEndpoints.cs",
+              "DocumentMoniker": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Endpoints\\ImportEndpoints.cs",
+              "RelativeDocumentMoniker": "UadeAulas.Api\\Endpoints\\ImportEndpoints.cs",
+              "ToolTip": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Endpoints\\ImportEndpoints.cs",
+              "RelativeToolTip": "UadeAulas.Api\\Endpoints\\ImportEndpoints.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAxwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-29T18:00:25.015Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 21,
+              "Title": "AulaImportService.cs",
+              "DocumentMoniker": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Services\\AulaImportService.cs",
+              "RelativeDocumentMoniker": "UadeAulas.Api\\Services\\AulaImportService.cs",
+              "ToolTip": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Services\\AulaImportService.cs",
+              "RelativeToolTip": "UadeAulas.Api\\Services\\AulaImportService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAxwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-29T18:00:16.054Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "ImportResultDto.cs",
+              "DocumentMoniker": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Dtos\\ImportResultDto.cs",
+              "RelativeDocumentMoniker": "UadeAulas.Api\\Dtos\\ImportResultDto.cs",
+              "ToolTip": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Dtos\\ImportResultDto.cs",
+              "RelativeToolTip": "UadeAulas.Api\\Dtos\\ImportResultDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAxwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-29T17:59:59.483Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "Clase.cs",
+              "DocumentMoniker": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Models\\Clase.cs",
+              "RelativeDocumentMoniker": "UadeAulas.Api\\Models\\Clase.cs",
+              "ToolTip": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Models\\Clase.cs",
+              "RelativeToolTip": "UadeAulas.Api\\Models\\Clase.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAxwBgAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-29T17:58:25.614Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "InscripcionInteres.cs",
+              "DocumentMoniker": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Models\\InscripcionInteres.cs",
+              "RelativeDocumentMoniker": "UadeAulas.Api\\Models\\InscripcionInteres.cs",
+              "ToolTip": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Models\\InscripcionInteres.cs",
+              "RelativeToolTip": "UadeAulas.Api\\Models\\InscripcionInteres.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAxwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-29T17:58:19.854Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "Alumno.cs",
+              "DocumentMoniker": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Models\\Alumno.cs",
+              "RelativeDocumentMoniker": "UadeAulas.Api\\Models\\Alumno.cs",
+              "ToolTip": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Models\\Alumno.cs",
+              "RelativeToolTip": "UadeAulas.Api\\Models\\Alumno.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAxwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-29T17:58:16.192Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "DocenteMateria.cs",
+              "DocumentMoniker": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Models\\DocenteMateria.cs",
+              "RelativeDocumentMoniker": "UadeAulas.Api\\Models\\DocenteMateria.cs",
+              "ToolTip": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Models\\DocenteMateria.cs",
+              "RelativeToolTip": "UadeAulas.Api\\Models\\DocenteMateria.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAxwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-29T17:58:12.459Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "MateriaCarrera.cs",
+              "DocumentMoniker": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Models\\MateriaCarrera.cs",
+              "RelativeDocumentMoniker": "UadeAulas.Api\\Models\\MateriaCarrera.cs",
+              "ToolTip": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Models\\MateriaCarrera.cs",
+              "RelativeToolTip": "UadeAulas.Api\\Models\\MateriaCarrera.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAxwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-29T17:58:09.691Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "Aula.cs",
+              "DocumentMoniker": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Models\\Aula.cs",
+              "RelativeDocumentMoniker": "UadeAulas.Api\\Models\\Aula.cs",
+              "ToolTip": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Models\\Aula.cs",
+              "RelativeToolTip": "UadeAulas.Api\\Models\\Aula.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAxwBEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-25T18:29:36.104Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "AulaDto.cs",
+              "DocumentMoniker": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Dtos\\AulaDto.cs",
+              "RelativeDocumentMoniker": "UadeAulas.Api\\Dtos\\AulaDto.cs",
+              "ToolTip": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Dtos\\AulaDto.cs",
+              "RelativeToolTip": "UadeAulas.Api\\Dtos\\AulaDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAxwBAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-25T18:29:37.5Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "Repository.cs",
+              "DocumentMoniker": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Data\\Repository.cs",
+              "RelativeDocumentMoniker": "UadeAulas.Api\\Data\\Repository.cs",
+              "ToolTip": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Data\\Repository.cs",
+              "RelativeToolTip": "UadeAulas.Api\\Data\\Repository.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAxwLUBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-25T18:29:37.614Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "CatalogService.cs",
+              "DocumentMoniker": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Services\\CatalogService.cs",
+              "RelativeDocumentMoniker": "UadeAulas.Api\\Services\\CatalogService.cs",
+              "ToolTip": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Services\\CatalogService.cs",
+              "RelativeToolTip": "UadeAulas.Api\\Services\\CatalogService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAxwEcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-25T18:29:37.683Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "OfertaService.cs",
+              "DocumentMoniker": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Services\\OfertaService.cs",
+              "RelativeDocumentMoniker": "UadeAulas.Api\\Services\\OfertaService.cs",
+              "ToolTip": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\Services\\OfertaService.cs",
+              "RelativeToolTip": "UadeAulas.Api\\Services\\OfertaService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAxwJ0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-25T18:29:37.746Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "reset_db2.sql ",
+              "DocumentMoniker": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\reset_db2.sql",
+              "RelativeDocumentMoniker": "UadeAulas.Api\\reset_db2.sql",
+              "ToolTip": "reset_db2.sql ",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2026-09-25T14:28:43.323Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "proxy.conf.json",
+              "DocumentMoniker": "C:\\Emi\\10. FE Asignacion de clases\\uade-aulas-web\\proxy.conf.json",
+              "RelativeDocumentMoniker": "..\\10. FE Asignacion de clases\\uade-aulas-web\\proxy.conf.json",
+              "ToolTip": "C:\\Emi\\10. FE Asignacion de clases\\uade-aulas-web\\proxy.conf.json",
+              "RelativeToolTip": "..\\10. FE Asignacion de clases\\uade-aulas-web\\proxy.conf.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-09-25T13:55:42.895Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "reset_db.sql ",
+              "DocumentMoniker": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\reset_db.sql",
+              "RelativeDocumentMoniker": "UadeAulas.Api\\reset_db.sql",
+              "ToolTip": "reset_db.sql ",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
+              "WhenOpened": "2026-09-25T13:27:08.59Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "tablas.md",
+              "DocumentMoniker": "C:\\Emi\\10. BE Asignacion de clases\\uade-demanda\\references\\tablas.md",
+              "RelativeDocumentMoniker": "uade-demanda\\references\\tablas.md",
+              "ToolTip": "C:\\Emi\\10. BE Asignacion de clases\\uade-demanda\\references\\tablas.md",
+              "RelativeToolTip": "uade-demanda\\references\\tablas.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2026-09-15T18:01:38.887Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

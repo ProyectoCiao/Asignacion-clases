@@ -1,0 +1,158 @@
+﻿using UadeAulas.Api.Data;
+using UadeAulas.Api.Dtos;
+using UadeAulas.Api.Models;
+
+namespace UadeAulas.Api.Services;
+
+public class OfertaService
+{
+    private readonly Repository _repository;
+
+    public OfertaService(Repository repository)
+    {
+        _repository = repository;
+    }
+
+    /// <summary>
+    /// Obtiene la lista de clases con toda la información (materia, aula, docentes, etc.)
+    /// </summary>
+    public async Task<List<OfertaRowDto>> GetOfertaAsync(int? sedeId = null, string? turno = null, string? q = null)
+    {
+        var clases = await _repository.GetClasesAsync(sedeId, turno);
+        var aulas = await _repository.GetAulasAsync();
+        var materias = await _repository.GetMateriasAsync();
+        var sedes = await _repository.GetSedesAsync();
+        var asignaciones = new Dictionary<long, Asignacion>();
+
+        // Precargar todas las asignaciones
+        foreach (var clase in clases)
+        {
+            var asignacion = await _repository.GetAsignacionByClaseIdAsync(clase.Id);
+            if (asignacion != null)
+                asignaciones[clase.Id] = asignacion;
+        }
+
+        var filas = new List<OfertaRowDto>();
+
+        foreach (var clase in clases)
+        {
+            // Buscar materia
+            var materia = materias.FirstOrDefault(m => m.Codigo == clase.MateriaCodigo);
+            if (materia == null) continue;
+
+            // Buscar sede
+            var sede = sedes.FirstOrDefault(s => s.Id == clase.SedeId);
+            if (sede == null) continue;
+
+            // Buscar asignación
+            asignaciones.TryGetValue(clase.Id, out var asignacion);
+
+            // Buscar aula
+            Aula? aula = null;
+            if (asignacion?.AulaId.HasValue == true)
+                aula = aulas.FirstOrDefault(a => a.Id == asignacion.AulaId);
+
+            // Obtener docentes
+            var docentes = await _repository.GetDocentesByClaseIdAsync(clase.Id);
+            var docentesStr = string.Join(", ", docentes.Select(d => d.Nombre));
+
+            // Filtrar por búsqueda si aplica
+            if (!string.IsNullOrEmpty(q))
+            {
+                var searchLower = q.ToLower();
+                var matches = materia.Nombre.ToLower().Contains(searchLower) ||
+                              materia.Codigo.ToLower().Contains(searchLower) ||
+                              clase.NroClase.ToString().Contains(searchLower) ||
+                              (aula?.Codigo.ToLower().Contains(searchLower) ?? false) ||
+                              docentesStr.ToLower().Contains(searchLower);
+
+                if (!matches) continue;
+            }
+
+            filas.Add(new OfertaRowDto
+            {
+                ClaseId = clase.Id,
+                NroClase = clase.NroClase,
+                MateriaCodigo = materia.Codigo,
+                MateriaNombre = materia.Nombre,
+                Facultad = materia.Facultad,
+                Departamento = materia.Departamento,
+                SedeId = sede.Id,
+                SedeCodigo = sede.Codigo,
+                SedeNombre = sede.Nombre,
+                AulaId = aula?.Id,
+                AulaCodigo = aula?.Codigo,
+                AulaTipo = aula?.TipoGrupo,
+                AulaCapacidad = aula?.CapacidadTotal,
+                AulaPiso = aula?.Piso,
+                Turno = clase.Turno,
+                HorarioDesde = clase.HorarioDesde.ToString("HH:mm"),
+                HorarioHasta = clase.HorarioHasta.ToString("HH:mm"),
+                Dias = clase.Dias,
+                Regimen = clase.Regimen,
+                Idioma = clase.Idioma,
+                Modalidad = clase.Modalidad,
+                Inscriptos = clase.Inscriptos,
+                InscriptosConReserva = clase.InscriptosConReserva,
+                Docentes = docentesStr,
+                SillasVacias = asignacion?.SillasVacias ?? 0,
+                Origen = asignacion?.Origen ?? "SIN_ASIGNACION"
+            });
+        }
+
+        return filas;
+    }
+
+    /// <summary>
+    /// Obtiene los catálogos (sedes, facultades, aulas)
+    /// </summary>
+    public async Task<CatalogosDto> GetCatalogosAsync()
+    {
+        var sedes = await _repository.GetSedesAsync();
+        var aulas = await _repository.GetAulasAsync();
+        var materias = await _repository.GetMateriasAsync();
+
+        // Filtrar solo aulas activas, no REMOTA ni SIN_AULA
+        var aulasFiltered = aulas
+            .Where(a => a.Activa && a.TipoGrupo != "REMOTA" && a.TipoGrupo != "SIN_AULA")
+            .ToList();
+
+        var facultades = materias
+            .Where(m => !string.IsNullOrEmpty(m.Facultad))
+            .Select(m => m.Facultad!)
+            .Distinct()
+            .OrderBy(f => f)
+            .ToList();
+
+        return new CatalogosDto
+        {
+            Sedes = sedes.Select(s => new SedeDto
+            {
+                Id = s.Id,
+                Codigo = s.Codigo,
+                Nombre = s.Nombre
+            }).ToList(),
+            Facultades = facultades,
+            Aulas = aulasFiltered.Select(a => new AulaDto
+            {
+                Id = a.Id,
+                SedeId = a.SedeId,
+                Codigo = a.Codigo,
+                TipoGrupo = a.TipoGrupo,
+                TipoDetalle = a.TipoDetalle,
+                Piso = a.Piso,
+                CapacidadReal = a.CapacidadReal,
+                CapacidadTotal = a.CapacidadTotal,
+                Equipamiento = a.Equipamiento,
+                Activa = a.Activa,
+                Edificio = a.Edificio,
+                Sede = new SedeDto
+                {
+                    Id = a.SedeId,
+                    Codigo = sedes.First(s => s.Id == a.SedeId).Codigo,
+                    Nombre = sedes.First(s => s.Id == a.SedeId).Nombre
+                }
+            }).ToList()
+        };
+    }
+}

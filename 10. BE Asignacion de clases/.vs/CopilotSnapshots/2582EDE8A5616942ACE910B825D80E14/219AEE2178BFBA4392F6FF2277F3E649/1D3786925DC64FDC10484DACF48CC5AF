@@ -1,0 +1,26 @@
+﻿using ClosedXML.Excel;
+
+using var wb = new XLWorkbook();
+var ws = wb.Worksheets.Add("Aulas");
+ws.Cell(1, 1).Value = "Aula Principal";
+ws.Cell(1, 2).Value = "Sede";
+ws.Cell(1, 3).Value = "Capacidad Real";
+ws.Cell(1, 4).Value = "Capacidad Total";
+ws.Cell(1, 5).Value = "Piso";
+ws.Cell(1, 6).Value = "Edificio";
+
+ws.Cell(2, 1).Value = "TEST-901";
+ws.Cell(2, 2).Value = "UADE Monserrat";
+ws.Cell(2, 3).Value = 30;
+ws.Cell(2, 4).Value = 32;
+ws.Cell(2, 5).Value = 7;
+ws.Cell(2, 6).Value = "Edificio Central";
+
+ws.Cell(3, 1).Value = "TEST-LAB-902";
+ws.Cell(3, 2).Value = "Sede Nueva Test";
+ws.Cell(3, 3).Value = 18;
+ws.Cell(3, 4).Value = 20;
+ws.Cell(3, 5).Value = 2;
+ws.Cell(3, 6).Value = "Edificio Nuevo";
+
+wb.SaveAs(args[0]);

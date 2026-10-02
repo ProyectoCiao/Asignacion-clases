@@ -1,0 +1,16 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "backend",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "--project", "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\UadeAulas.Api.csproj", "--launch-profile", "http"],
+      "port": 5080
+    },
+    {
+      "name": "frontend",
+      "url": "http://localhost:4200",
+      "port": 4200
+    }
+  ]
+}

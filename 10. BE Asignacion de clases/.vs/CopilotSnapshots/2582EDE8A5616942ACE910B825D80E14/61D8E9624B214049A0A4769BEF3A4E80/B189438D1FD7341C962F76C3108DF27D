@@ -1,0 +1,85 @@
+﻿using UadeAulas.Api.Dtos;
+using UadeAulas.Api.Services;
+
+namespace UadeAulas.Api.Endpoints;
+
+public static class ImportEndpoints
+{
+    public static void MapImportEndpoints(this WebApplication app)
+    {
+        app.MapGroup("/import")
+            .WithTags("Import")
+            .MapPost("/aulas", ImportarAulas)
+            .WithName("ImportarAulas")
+            .Produces<ImportResultDto>()
+            .Produces(400)
+            .DisableAntiforgery();
+
+        app.MapGroup("/import")
+            .WithTags("Import")
+            .MapPost("/materias-carreras", ImportarMateriasCarreras)
+            .WithName("ImportarMateriasCarreras")
+            .Produces<ImportResultDto>()
+            .Produces(400)
+            .DisableAntiforgery();
+
+        app.MapGroup("/import")
+            .WithTags("Import")
+            .MapPost("/alumnos", ImportarAlumnos)
+            .WithName("ImportarAlumnos")
+            .Produces<ImportResultDto>()
+            .Produces(400)
+            .DisableAntiforgery();
+    }
+
+    public static async Task<IResult> ImportarAlumnos(AlumnoImportService service, IFormFile archivo)
+    {
+        if (archivo.Length == 0)
+            return Results.BadRequest(new { error = "El archivo está vacío." });
+
+        try
+        {
+            using var stream = archivo.OpenReadStream();
+            var resultado = await service.ImportarAsync(stream);
+            return Results.Ok(resultado);
+        }
+        catch (Exception ex)
+        {
+            return Results.BadRequest(new { error = ex.Message });
+        }
+    }
+
+    public static async Task<IResult> ImportarMateriasCarreras(MateriaCarreraImportService service, IFormFile archivo, string? carrera = null)
+    {
+        if (archivo.Length == 0)
+            return Results.BadRequest(new { error = "El archivo está vacío." });
+
+        try
+        {
+            using var stream = archivo.OpenReadStream();
+            var resultado = await service.ImportarAsync(stream, carrera);
+            return Results.Ok(resultado);
+        }
+        catch (Exception ex)
+        {
+            return Results.BadRequest(new { error = ex.Message });
+        }
+    }
+
+    public static async Task<IResult> ImportarAulas(AulaImportService service, IFormFile archivo)
+    {
+        if (archivo.Length == 0)
+            return Results.BadRequest(new { error = "El archivo está vacío." });
+
+        try
+        {
+            using var stream = archivo.OpenReadStream();
+            var resultado = await service.ImportarAsync(stream);
+            return Results.Ok(resultado);
+        }
+        catch (Exception ex)
+        {
+            return Results.BadRequest(new { error = ex.Message });
+        }
+    }
+}

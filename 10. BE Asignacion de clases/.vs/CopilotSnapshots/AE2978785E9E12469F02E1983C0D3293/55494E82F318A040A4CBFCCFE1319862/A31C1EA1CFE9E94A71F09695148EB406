@@ -1,0 +1,55 @@
+﻿using System.Text.Json.Serialization;
+using UadeAulas.Api.Data;
+using UadeAulas.Api.Services;
+using UadeAulas.Api.Endpoints;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services
+builder.Services.AddScoped<Repository>();
+builder.Services.AddScoped<OfertaService>();
+
+// Add CORS
+var allowedOrigins = builder.Configuration["Cors:AllowedOrigins"] ?? "http://localhost:4200";
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.WithOrigins(allowedOrigins)
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
+});
+
+// Add Swagger/OpenAPI
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+// Configure JSON serialization (camelCase)
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+    options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+});
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+app.UseCors();
+
+// Map endpoints
+app.MapOfertaEndpoints();
+
+// Health check endpoint
+app.MapGet("/health", () => new { status = "healthy" })
+    .WithName("Health")
+    .WithOpenApi();
+
+app.Run("http://localhost:5080");

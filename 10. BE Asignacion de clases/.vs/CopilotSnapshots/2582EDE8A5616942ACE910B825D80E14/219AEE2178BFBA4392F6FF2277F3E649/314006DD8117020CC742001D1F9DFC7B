@@ -1,0 +1,491 @@
+﻿-- Script para resetear la BD - Alineado con init.sql / Repository.cs
+-- Autor: Assistant
+-- Fecha: 2026-09-14 (actualizado)
+
+-- DROP de tablas existentes (en orden de dependencia)
+DROP TABLE IF EXISTS inscripcion_interes CASCADE;
+DROP TABLE IF EXISTS inscripcion CASCADE;
+DROP TABLE IF EXISTS oferta_meta CASCADE;
+DROP TABLE IF EXISTS docente_materia CASCADE;
+DROP TABLE IF EXISTS materia_carrera CASCADE;
+DROP TABLE IF EXISTS asignacion CASCADE;
+DROP TABLE IF EXISTS clase_docente CASCADE;
+DROP TABLE IF EXISTS demanda_snapshot CASCADE;
+DROP TABLE IF EXISTS clase CASCADE;
+DROP TABLE IF EXISTS planificacion CASCADE;
+DROP TABLE IF EXISTS aula CASCADE;
+DROP TABLE IF EXISTS docente CASCADE;
+DROP TABLE IF EXISTS alumno CASCADE;
+DROP TABLE IF EXISTS carrera CASCADE;
+DROP TABLE IF EXISTS periodo CASCADE;
+DROP TABLE IF EXISTS sede CASCADE;
+DROP TABLE IF EXISTS materia CASCADE;
+
+-- ==================== CREAR TABLAS (esquema real usado por Repository.cs) ====================
+
+CREATE TABLE sede (
+	id SERIAL PRIMARY KEY,
+	codigo VARCHAR(50) NOT NULL UNIQUE,
+	nombre VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE periodo (
+	id SERIAL PRIMARY KEY,
+	ciclo VARCHAR(50) NOT NULL,
+	nombre VARCHAR(255) NOT NULL,
+	fecha_desde DATE NOT NULL,
+	fecha_hasta DATE NOT NULL
+);
+
+CREATE TABLE materia (
+	codigo VARCHAR(50) PRIMARY KEY,
+	nombre VARCHAR(255) NOT NULL,
+	facultad VARCHAR(255),
+	departamento VARCHAR(255),
+	carga_horaria INT DEFAULT 0
+);
+
+CREATE TABLE docente (
+	id SERIAL PRIMARY KEY,
+	nombre VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE carrera (
+	id SERIAL PRIMARY KEY,
+	codigo VARCHAR(50) NOT NULL UNIQUE,
+	nombre VARCHAR(255) NOT NULL,
+	facultad VARCHAR(255)
+);
+
+-- Planificacion: version de la programacion de clases (borrador editable o finalizada/inmutable).
+-- El primer excel importado crea la planificacion inicial en estado BORRADOR; al "Finalizar" queda
+-- FINALIZADA y se habilita crear la siguiente planificacion (nuevo cuatrimestre) como copia editable.
+CREATE TABLE planificacion (
+	id SERIAL PRIMARY KEY,
+	periodo_id INT NOT NULL REFERENCES periodo(id),
+	nombre VARCHAR(255) NOT NULL,
+	estado VARCHAR(20) NOT NULL DEFAULT 'BORRADOR' CHECK (estado IN ('BORRADOR', 'FINALIZADA')),
+	fecha_creacion TIMESTAMP NOT NULL DEFAULT now(),
+	fecha_finalizacion TIMESTAMP
+);
+
+-- Materia_carrera: relacion materia-carrera con datos adicionales del excel Materias_carreras
+CREATE TABLE materia_carrera (
+	id SERIAL PRIMARY KEY,
+	materia_codigo VARCHAR(50) NOT NULL REFERENCES materia(codigo),
+	carrera_id INT NOT NULL REFERENCES carrera(id),
+	ciclo VARCHAR(50),
+	modalidad VARCHAR(50),
+	idioma VARCHAR(50),
+	nivel_idioma VARCHAR(50),
+	regimen VARCHAR(50),
+	origen_excel_id VARCHAR(50),
+	UNIQUE (materia_codigo, carrera_id)
+);
+
+-- Docente_materia: docentes que regularmente dictan una materia (segun excel Materias_carreras)
+CREATE TABLE docente_materia (
+	docente_id INT NOT NULL REFERENCES docente(id),
+	materia_codigo VARCHAR(50) NOT NULL REFERENCES materia(codigo),
+	PRIMARY KEY (docente_id, materia_codigo)
+);
+
+CREATE TABLE alumno (
+	legajo VARCHAR(50) PRIMARY KEY,
+	nombre VARCHAR(255) NOT NULL,
+	mail_personal VARCHAR(255),
+	mail_uade VARCHAR(255),
+	carrera_id INT REFERENCES carrera(id),
+	sede_carrera_id INT REFERENCES sede(id),
+	enrollment_ciclo VARCHAR(50),
+	enrollment_periodo VARCHAR(50),
+	materias_aprobadas INT DEFAULT 0
+);
+
+-- Inscripcion_interes: intencion de cursada de un alumno para una materia (excel Alumnos_inscripcion)
+CREATE TABLE inscripcion_interes (
+	id BIGSERIAL PRIMARY KEY,
+	alumno_legajo VARCHAR(50) NOT NULL REFERENCES alumno(legajo),
+	materia_codigo VARCHAR(50) NOT NULL REFERENCES materia(codigo),
+	anio_estimado INT,
+	anio_materia INT,
+	cuat_materia VARCHAR(20),
+	bloque VARCHAR(50),
+	turno VARCHAR(50),
+	comision VARCHAR(50),
+	prioridad INT,
+	es_alternativa BOOLEAN DEFAULT false
+);
+
+CREATE TABLE aula (
+	id SERIAL PRIMARY KEY,
+	sede_id INT NOT NULL REFERENCES sede(id),
+	codigo VARCHAR(50) NOT NULL,
+	tipo_grupo VARCHAR(50) NOT NULL,
+	tipo_detalle VARCHAR(255),
+	piso INT NOT NULL,
+	capacidad_real INT NOT NULL,
+	capacidad_total INT NOT NULL,
+	equipamiento TEXT[],
+	activa BOOLEAN DEFAULT true,
+	edificio VARCHAR(255),
+	UNIQUE (sede_id, codigo)
+);
+
+CREATE TABLE clase (
+	id BIGSERIAL PRIMARY KEY,
+	nro_clase INT NOT NULL,
+	periodo_id INT NOT NULL REFERENCES periodo(id),
+	planificacion_id INT REFERENCES planificacion(id),
+	sede_id INT NOT NULL REFERENCES sede(id),
+	materia_codigo VARCHAR(50) NOT NULL REFERENCES materia(codigo),
+	turno VARCHAR(50) NOT NULL,
+	horario_desde TIME NOT NULL,
+	horario_hasta TIME NOT NULL,
+	dias TEXT[],
+	regimen VARCHAR(50) DEFAULT 'PRESENCIAL',
+	idioma VARCHAR(50) DEFAULT 'ES',
+	modalidad VARCHAR(50) DEFAULT 'REGULAR',
+	inscriptos INT DEFAULT 0,
+	inscriptos_con_reserva INT DEFAULT 0,
+	packs TEXT[]
+);
+
+CREATE TABLE clase_docente (
+	clase_id BIGINT NOT NULL REFERENCES clase(id),
+	docente_id INT NOT NULL REFERENCES docente(id),
+	PRIMARY KEY (clase_id, docente_id)
+);
+
+CREATE TABLE asignacion (
+	id BIGSERIAL PRIMARY KEY,
+	clase_id BIGINT NOT NULL UNIQUE REFERENCES clase(id),
+	aula_id INT REFERENCES aula(id),
+	origen VARCHAR(50) NOT NULL,
+	sillas_vacias INT DEFAULT 0
+);
+
+CREATE TABLE demanda_snapshot (
+	materia_codigo VARCHAR(50) PRIMARY KEY REFERENCES materia(codigo),
+	solicitudes INT DEFAULT 0
+);
+
+-- Índices para performance
+CREATE INDEX idx_clase_periodo ON clase(periodo_id);
+CREATE INDEX idx_clase_sede ON clase(sede_id);
+CREATE INDEX idx_clase_materia ON clase(materia_codigo);
+CREATE INDEX idx_aula_sede ON aula(sede_id);
+CREATE INDEX idx_asignacion_clase ON asignacion(clase_id);
+CREATE INDEX idx_asignacion_aula ON asignacion(aula_id);
+CREATE INDEX idx_clase_docente_clase ON clase_docente(clase_id);
+CREATE INDEX idx_clase_docente_docente ON clase_docente(docente_id);
+CREATE INDEX idx_clase_planificacion ON clase(planificacion_id);
+CREATE INDEX idx_planificacion_periodo ON planificacion(periodo_id);
+CREATE INDEX idx_materia_carrera_materia ON materia_carrera(materia_codigo);
+CREATE INDEX idx_materia_carrera_carrera ON materia_carrera(carrera_id);
+CREATE INDEX idx_docente_materia_materia ON docente_materia(materia_codigo);
+CREATE INDEX idx_alumno_carrera ON alumno(carrera_id);
+CREATE INDEX idx_inscripcion_interes_alumno ON inscripcion_interes(alumno_legajo);
+CREATE INDEX idx_inscripcion_interes_materia ON inscripcion_interes(materia_codigo);
+
+-- ==================== INSERTAR DATOS ====================
+
+-- SEDES (sede Centro renombrada a Monserrat)
+INSERT INTO sede (codigo, nombre) VALUES
+('MONSERRAT', 'UADE Monserrat'),
+('BELGRANO', 'UADE Belgrano'),
+('FLORES', 'UADE Flores');
+
+-- PERIODOS
+INSERT INTO periodo (ciclo, nombre, fecha_desde, fecha_hasta) VALUES
+('2024-1', 'Primer Cuatrimestre 2024', '2024-02-01', '2024-05-31'),
+('2024-2', 'Segundo Cuatrimestre 2024', '2024-08-01', '2024-11-30'),
+('2025-1', 'Primer Cuatrimestre 2025', '2025-02-01', '2025-05-31');
+
+-- CARRERAS
+INSERT INTO carrera (codigo, nombre, facultad) VALUES
+('ISI', 'Ingeniería en Sistemas de Información', 'Ingeniería'),
+('LAD', 'Licenciatura en Administración', 'Administración');
+
+-- PLANIFICACION (version inicial, ligada al ultimo periodo cargado; queda en BORRADOR
+-- hasta que el backoffice presione "Finalizar" desde el tab "última programación")
+INSERT INTO planificacion (periodo_id, nombre, estado) VALUES
+(3, 'Primer Cuatrimestre 2025', 'BORRADOR');
+
+-- MATERIAS
+INSERT INTO materia (codigo, nombre, facultad, departamento, carga_horaria) VALUES
+('PROG101', 'Programación I', 'Ingeniería', 'Sistemas', 80),
+('PROG102', 'Programación II', 'Ingeniería', 'Sistemas', 80),
+('BD101', 'Base de Datos I', 'Ingeniería', 'Sistemas', 64),
+('BD102', 'Base de Datos II', 'Ingeniería', 'Sistemas', 64),
+('ALGO101', 'Algoritmos', 'Ingeniería', 'Sistemas', 80),
+('WEB101', 'Desarrollo Web', 'Ingeniería', 'Sistemas', 80),
+('MATH101', 'Matemática Discreta', 'Ingeniería', 'Matemática', 96),
+('STAT101', 'Estadística', 'Ingeniería', 'Matemática', 64),
+('ARCH101', 'Arquitectura de Software', 'Ingeniería', 'Sistemas', 48),
+('PROJ101', 'Gestión de Proyectos', 'Administración', 'General', 48),
+('REDES101', 'Redes de Computadoras', 'Ingeniería', 'Sistemas', 64),
+('MOBILE101', 'Desarrollo Mobile', 'Ingeniería', 'Sistemas', 80),
+('CLOUD101', 'Cloud Computing', 'Ingeniería', 'Sistemas', 48),
+('SECURITY101', 'Seguridad Informática', 'Ingeniería', 'Sistemas', 64),
+('DEVOPS101', 'DevOps y CI/CD', 'Ingeniería', 'Sistemas', 48);
+
+-- DOCENTES
+INSERT INTO docente (nombre) VALUES
+('Dr. Juan Pérez'),
+('Dra. María García'),
+('Ing. Carlos López'),
+('Ing. Ana Fernández'),
+('Lic. Roberto Sánchez'),
+('Ing. Laura Martínez');
+
+-- AULAS (todos los tipo_grupo: AULA, HIBRIDA, LAB, TALLER, ARTE, REMOTA, SIN_AULA; 20 aulas por sede)
+INSERT INTO aula (sede_id, codigo, tipo_grupo, tipo_detalle, piso, capacidad_real, capacidad_total, activa, edificio) VALUES
+-- Sede Monserrat
+(1, 'MON-101', 'AULA', NULL, 1, 14, 14, true, 'Edificio Central'),
+(1, 'MON-102', 'AULA', NULL, 1, 16, 16, true, 'Edificio Central'),
+(1, 'MON-103', 'AULA', NULL, 2, 18, 18, true, 'Edificio Central'),
+(1, 'MON-104', 'LAB', 'Laboratorio de Computación', 2, 12, 12, true, 'Edificio Anexo'),
+(1, 'MON-105', 'AULA', NULL, 3, 20, 20, true, 'Edificio Anexo'),
+(1, 'MON-106', 'AULA', NULL, 3, 22, 24, true, 'Edificio Anexo'),
+(1, 'MON-107', 'LAB', 'Laboratorio de Redes', 4, 15, 16, true, 'Edificio Anexo'),
+(1, 'MON-108', 'AULA', NULL, 4, 25, 28, true, 'Edificio Central'),
+(1, 'MON-109', 'AULA', NULL, 5, 30, 32, true, 'Edificio Central'),
+(1, 'MON-110', 'LAB', 'Laboratorio de Computación', 5, 20, 22, true, 'Edificio Anexo'),
+(1, 'MON-111', 'TALLER', 'Taller de Electrónica', 1, 12, 14, true, 'Edificio Anexo'),
+(1, 'MON-112', 'AULA', NULL, 6, 35, 38, true, 'Edificio Central'),
+(1, 'MON-113', 'LAB', 'Laboratorio de Hardware', 6, 16, 18, true, 'Edificio Anexo'),
+(1, 'MON-114', 'AULA', NULL, 2, 24, 26, true, 'Edificio Central'),
+(1, 'MON-115', 'TALLER', 'Taller de Diseño', 6, 14, 16, true, 'Edificio Anexo'),
+(1, 'MON-116', 'HIBRIDA', 'Aula Híbrida con streaming', 3, 20, 22, true, 'Edificio Central'),
+(1, 'MON-117', 'ARTE', 'Aula-Taller de Arte y Expresión', 1, 16, 18, true, 'Edificio Anexo'),
+(1, 'MON-118', 'REMOTA', 'Estudio de clases remotas', 7, 0, 0, true, 'Edificio Central'),
+(1, 'MON-119', 'SIN_AULA', 'Actividad sin espacio físico asignado', 0, 0, 0, true, NULL),
+(1, 'MON-120', 'HIBRIDA', 'Aula Híbrida con streaming', 4, 18, 20, true, 'Edificio Anexo'),
+-- Sede Belgrano
+(2, 'BEL-201', 'AULA', NULL, 1, 15, 15, true, 'Edificio Belgrano'),
+(2, 'BEL-202', 'AULA', NULL, 1, 17, 17, true, 'Edificio Belgrano'),
+(2, 'BEL-203', 'LAB', 'Laboratorio de Computación', 2, 13, 13, true, 'Edificio Belgrano'),
+(2, 'BEL-204', 'AULA', NULL, 2, 19, 19, true, 'Edificio Belgrano'),
+(2, 'BEL-205', 'AULA', NULL, 3, 11, 11, true, 'Edificio Belgrano'),
+(2, 'BEL-206', 'AULA', NULL, 3, 24, 26, true, 'Edificio Belgrano'),
+(2, 'BEL-207', 'LAB', 'Laboratorio de Redes', 4, 14, 15, true, 'Edificio Belgrano Anexo'),
+(2, 'BEL-208', 'AULA', NULL, 4, 28, 30, true, 'Edificio Belgrano Anexo'),
+(2, 'BEL-209', 'AULA', NULL, 5, 32, 35, true, 'Edificio Belgrano Anexo'),
+(2, 'BEL-210', 'LAB', 'Laboratorio de Computación', 5, 18, 20, true, 'Edificio Belgrano Anexo'),
+(2, 'BEL-211', 'TALLER', 'Taller de Electrónica', 1, 13, 15, true, 'Edificio Belgrano'),
+(2, 'BEL-212', 'AULA', NULL, 6, 33, 36, true, 'Edificio Belgrano Anexo'),
+(2, 'BEL-213', 'LAB', 'Laboratorio de Hardware', 6, 17, 19, true, 'Edificio Belgrano Anexo'),
+(2, 'BEL-214', 'AULA', NULL, 2, 21, 23, true, 'Edificio Belgrano'),
+(2, 'BEL-215', 'TALLER', 'Taller de Diseño', 6, 15, 17, true, 'Edificio Belgrano Anexo'),
+(2, 'BEL-216', 'HIBRIDA', 'Aula Híbrida con streaming', 3, 19, 21, true, 'Edificio Belgrano'),
+(2, 'BEL-217', 'ARTE', 'Aula-Taller de Arte y Expresión', 1, 15, 17, true, 'Edificio Belgrano'),
+(2, 'BEL-218', 'REMOTA', 'Estudio de clases remotas', 7, 0, 0, true, 'Edificio Belgrano Anexo'),
+(2, 'BEL-219', 'SIN_AULA', 'Actividad sin espacio físico asignado', 0, 0, 0, true, NULL),
+(2, 'BEL-220', 'HIBRIDA', 'Aula Híbrida con streaming', 4, 17, 19, true, 'Edificio Belgrano Anexo'),
+-- Sede Flores
+(3, 'FLO-301', 'AULA', NULL, 1, 16, 16, true, 'Edificio Flores'),
+(3, 'FLO-302', 'AULA', NULL, 1, 18, 18, true, 'Edificio Flores'),
+(3, 'FLO-303', 'AULA', NULL, 2, 14, 14, true, 'Edificio Flores'),
+(3, 'FLO-304', 'LAB', 'Laboratorio de Computación', 2, 20, 20, true, 'Edificio Flores'),
+(3, 'FLO-305', 'AULA', NULL, 3, 10, 10, true, 'Edificio Flores'),
+(3, 'FLO-306', 'AULA', NULL, 3, 21, 23, true, 'Edificio Flores'),
+(3, 'FLO-307', 'LAB', 'Laboratorio de Redes', 4, 13, 14, true, 'Edificio Flores Anexo'),
+(3, 'FLO-308', 'AULA', NULL, 4, 26, 28, true, 'Edificio Flores Anexo'),
+(3, 'FLO-309', 'AULA', NULL, 5, 34, 36, true, 'Edificio Flores Anexo'),
+(3, 'FLO-310', 'LAB', 'Laboratorio de Computación', 5, 19, 21, true, 'Edificio Flores Anexo'),
+(3, 'FLO-311', 'TALLER', 'Taller de Electrónica', 1, 11, 13, true, 'Edificio Flores'),
+(3, 'FLO-312', 'AULA', NULL, 6, 31, 34, true, 'Edificio Flores Anexo'),
+(3, 'FLO-313', 'LAB', 'Laboratorio de Hardware', 6, 15, 17, true, 'Edificio Flores Anexo'),
+(3, 'FLO-314', 'AULA', NULL, 2, 23, 25, true, 'Edificio Flores'),
+(3, 'FLO-315', 'TALLER', 'Taller de Diseño', 6, 13, 15, true, 'Edificio Flores Anexo'),
+(3, 'FLO-316', 'HIBRIDA', 'Aula Híbrida con streaming', 3, 18, 20, true, 'Edificio Flores'),
+(3, 'FLO-317', 'ARTE', 'Aula-Taller de Arte y Expresión', 1, 14, 16, true, 'Edificio Flores'),
+(3, 'FLO-318', 'REMOTA', 'Estudio de clases remotas', 7, 0, 0, true, 'Edificio Flores Anexo'),
+(3, 'FLO-319', 'SIN_AULA', 'Actividad sin espacio físico asignado', 0, 0, 0, true, NULL),
+(3, 'FLO-320', 'HIBRIDA', 'Aula Híbrida con streaming', 4, 16, 18, true, 'Edificio Flores Anexo');
+
+-- ==================== INSERTAR CLASES (una sola cursada semanal por clase) ====================
+
+-- Periodo 2024-1, Sede Monserrat
+INSERT INTO clase (nro_clase, periodo_id, sede_id, materia_codigo, turno, dias, horario_desde, horario_hasta, inscriptos, inscriptos_con_reserva) VALUES
+(4, 1, 1, 'PROG101', 'MANANA', ARRAY['Lunes'], '08:00', '10:00', 18, 16),
+(5, 1, 1, 'PROG101', 'MANANA', ARRAY['Martes'], '10:30', '12:30', 19, 17),
+(6, 1, 1, 'PROG101', 'TARDE', ARRAY['Miércoles'], '14:00', '16:00', 20, 18),
+(7, 1, 1, 'PROG101', 'TARDE', ARRAY['Jueves'], '16:30', '18:30', 17, 15),
+(8, 1, 1, 'PROG101', 'NOCHE', ARRAY['Lunes'], '19:00', '21:00', 15, 13),
+(9, 1, 1, 'BD101', 'MANANA', ARRAY['Martes'], '08:00', '10:00', 16, 14),
+(10, 1, 1, 'BD101', 'TARDE', ARRAY['Miércoles'], '14:00', '16:00', 18, 16),
+(11, 1, 1, 'BD101', 'NOCHE', ARRAY['Jueves'], '19:00', '21:00', 14, 12),
+(12, 1, 1, 'ALGO101', 'MANANA', ARRAY['Viernes'], '10:30', '12:30', 19, 17),
+(13, 1, 1, 'ALGO101', 'TARDE', ARRAY['Martes'], '14:00', '16:00', 20, 18),
+(14, 1, 1, 'WEB101', 'MANANA', ARRAY['Jueves'], '08:00', '10:00', 17, 15),
+(15, 1, 1, 'WEB101', 'TARDE', ARRAY['Lunes'], '16:30', '18:30', 19, 17),
+(16, 1, 1, 'MATH101', 'MANANA', ARRAY['Miércoles'], '08:00', '10:00', 20, 18),
+(17, 1, 1, 'MATH101', 'TARDE', ARRAY['Martes'], '14:00', '16:00', 18, 16),
+(18, 1, 1, 'STAT101', 'NOCHE', ARRAY['Lunes'], '19:00', '21:00', 16, 14),
+(19, 1, 1, 'ARCH101', 'MANANA', ARRAY['Viernes'], '08:00', '12:00', 15, 13),
+(20, 1, 1, 'PROJ101', 'TARDE', ARRAY['Jueves'], '14:00', '18:00', 17, 15),
+(21, 1, 1, 'REDES101', 'MANANA', ARRAY['Martes'], '10:30', '12:30', 18, 16),
+(22, 1, 1, 'MOBILE101', 'TARDE', ARRAY['Miércoles'], '14:00', '16:00', 19, 17),
+(23, 1, 1, 'CLOUD101', 'NOCHE', ARRAY['Jueves'], '19:00', '21:00', 14, 12),
+
+-- Periodo 2024-1, Sede Belgrano
+(24, 1, 2, 'PROG101', 'MANANA', ARRAY['Lunes'], '08:00', '10:00', 16, 14),
+(25, 1, 2, 'PROG101', 'TARDE', ARRAY['Martes'], '14:00', '16:00', 18, 16),
+(26, 1, 2, 'PROG102', 'MANANA', ARRAY['Jueves'], '10:30', '12:30', 17, 15),
+(27, 1, 2, 'PROG102', 'TARDE', ARRAY['Miércoles'], '16:30', '18:30', 19, 17),
+(28, 1, 2, 'BD101', 'MANANA', ARRAY['Lunes'], '08:00', '10:00', 15, 13),
+(29, 1, 2, 'BD102', 'TARDE', ARRAY['Martes'], '14:00', '16:00', 17, 15),
+(30, 1, 2, 'ALGO101', 'NOCHE', ARRAY['Miércoles'], '19:00', '21:00', 13, 11),
+(31, 1, 2, 'WEB101', 'MANANA', ARRAY['Viernes'], '08:00', '12:00', 16, 14),
+(32, 1, 2, 'MATH101', 'TARDE', ARRAY['Jueves'], '14:00', '16:00', 18, 16),
+(33, 1, 2, 'STAT101', 'MANANA', ARRAY['Lunes'], '10:30', '12:30', 19, 17),
+(34, 1, 2, 'SECURITY101', 'NOCHE', ARRAY['Jueves'], '19:00', '21:00', 14, 12),
+(35, 1, 2, 'DEVOPS101', 'TARDE', ARRAY['Viernes'], '14:00', '18:00', 15, 13),
+(36, 1, 2, 'REDES101', 'MANANA', ARRAY['Martes'], '08:00', '10:00', 17, 15),
+(37, 1, 2, 'MOBILE101', 'TARDE', ARRAY['Miércoles'], '16:30', '18:30', 18, 16),
+(38, 1, 2, 'CLOUD101', 'MANANA', ARRAY['Jueves'], '10:30', '12:30', 16, 14),
+
+-- Periodo 2024-1, Sede Flores
+(39, 1, 3, 'PROG101', 'MANANA', ARRAY['Lunes'], '08:00', '10:00', 19, 17),
+(40, 1, 3, 'PROG102', 'TARDE', ARRAY['Martes'], '14:00', '16:00', 20, 18),
+(41, 1, 3, 'BD101', 'NOCHE', ARRAY['Miércoles'], '19:00', '21:00', 15, 13),
+(42, 1, 3, 'ALGO101', 'MANANA', ARRAY['Jueves'], '10:30', '12:30', 17, 15),
+(43, 1, 3, 'WEB101', 'TARDE', ARRAY['Lunes'], '14:00', '16:00', 18, 16),
+(44, 1, 3, 'MATH101', 'NOCHE', ARRAY['Martes'], '19:00', '21:00', 14, 12),
+(45, 1, 3, 'STAT101', 'TARDE', ARRAY['Viernes'], '14:00', '16:00', 16, 14),
+(46, 1, 3, 'ARCH101', 'MANANA', ARRAY['Jueves'], '08:00', '12:00', 19, 17),
+(47, 1, 3, 'PROJ101', 'NOCHE', ARRAY['Martes'], '19:00', '21:00', 13, 11),
+(48, 1, 3, 'REDES101', 'TARDE', ARRAY['Miércoles'], '16:30', '18:30', 17, 15),
+
+-- Periodo 2024-2, Sede Monserrat
+(49, 2, 1, 'PROG101', 'MANANA', ARRAY['Lunes'], '08:00', '10:00', 18, 16),
+(50, 2, 1, 'PROG102', 'TARDE', ARRAY['Martes'], '14:00', '16:00', 19, 17),
+(51, 2, 1, 'BD101', 'MANANA', ARRAY['Jueves'], '10:30', '12:30', 20, 18),
+(52, 2, 1, 'BD102', 'TARDE', ARRAY['Lunes'], '16:30', '18:30', 17, 15),
+(53, 2, 1, 'ALGO101', 'NOCHE', ARRAY['Martes'], '19:00', '21:00', 15, 13),
+(54, 2, 1, 'WEB101', 'MANANA', ARRAY['Viernes'], '08:00', '10:00', 16, 14),
+(55, 2, 1, 'MATH101', 'TARDE', ARRAY['Jueves'], '14:00', '16:00', 18, 16),
+(56, 2, 1, 'STAT101', 'MANANA', ARRAY['Lunes'], '10:30', '12:30', 19, 17),
+(57, 2, 1, 'SECURITY101', 'NOCHE', ARRAY['Viernes'], '19:00', '21:00', 14, 12),
+(58, 2, 1, 'DEVOPS101', 'TARDE', ARRAY['Jueves'], '14:00', '18:00', 15, 13),
+(59, 2, 1, 'MOBILE101', 'MANANA', ARRAY['Martes'], '08:00', '10:00', 17, 15),
+(60, 2, 1, 'CLOUD101', 'TARDE', ARRAY['Miércoles'], '14:00', '16:00', 18, 16),
+(61, 2, 1, 'REDES101', 'NOCHE', ARRAY['Jueves'], '19:00', '21:00', 16, 14),
+(62, 2, 1, 'ARCH101', 'MANANA', ARRAY['Viernes'], '08:00', '12:00', 19, 17),
+(63, 2, 1, 'PROJ101', 'TARDE', ARRAY['Jueves'], '14:00', '18:00', 13, 11),
+
+-- Periodo 2024-2, Sede Belgrano
+(64, 2, 2, 'PROG101', 'MANANA', ARRAY['Lunes'], '08:00', '10:00', 17, 15),
+(65, 2, 2, 'PROG102', 'TARDE', ARRAY['Martes'], '14:00', '16:00', 18, 16),
+(66, 2, 2, 'BD101', 'NOCHE', ARRAY['Miércoles'], '19:00', '21:00', 20, 18),
+(67, 2, 2, 'BD102', 'MANANA', ARRAY['Jueves'], '10:30', '12:30', 15, 13),
+(68, 2, 2, 'ALGO101', 'TARDE', ARRAY['Lunes'], '14:00', '16:00', 19, 17),
+(69, 2, 2, 'WEB101', 'MANANA', ARRAY['Viernes'], '08:00', '12:00', 16, 14),
+(70, 2, 2, 'MATH101', 'NOCHE', ARRAY['Martes'], '19:00', '21:00', 14, 12),
+(71, 2, 2, 'STAT101', 'TARDE', ARRAY['Lunes'], '16:30', '18:30', 17, 15),
+(72, 2, 2, 'SECURITY101', 'MANANA', ARRAY['Jueves'], '08:00', '10:00', 18, 16),
+(73, 2, 2, 'DEVOPS101', 'NOCHE', ARRAY['Jueves'], '19:00', '21:00', 15, 13),
+(74, 2, 2, 'MOBILE101', 'TARDE', ARRAY['Miércoles'], '14:00', '16:00', 19, 17),
+(75, 2, 2, 'CLOUD101', 'MANANA', ARRAY['Martes'], '10:30', '12:30', 16, 14),
+(76, 2, 2, 'REDES101', 'TARDE', ARRAY['Viernes'], '14:00', '16:00', 17, 15),
+(77, 2, 2, 'ARCH101', 'NOCHE', ARRAY['Martes'], '19:00', '21:00', 14, 12),
+(78, 2, 2, 'PROJ101', 'MANANA', ARRAY['Lunes'], '08:00', '12:00', 15, 13),
+
+-- Periodo 2024-2, Sede Flores
+(79, 2, 3, 'PROG101', 'TARDE', ARRAY['Martes'], '14:00', '16:00', 18, 16),
+(80, 2, 3, 'PROG102', 'NOCHE', ARRAY['Lunes'], '19:00', '21:00', 19, 17),
+(81, 2, 3, 'BD101', 'MANANA', ARRAY['Jueves'], '08:00', '10:00', 20, 18),
+(82, 2, 3, 'BD102', 'TARDE', ARRAY['Miércoles'], '14:00', '16:00', 16, 14),
+(83, 2, 3, 'ALGO101', 'NOCHE', ARRAY['Martes'], '19:00', '21:00', 17, 15),
+(84, 2, 3, 'WEB101', 'MANANA', ARRAY['Viernes'], '10:30', '12:30', 18, 16),
+(85, 2, 3, 'MATH101', 'TARDE', ARRAY['Jueves'], '16:30', '18:30', 19, 17),
+(86, 2, 3, 'STAT101', 'NOCHE', ARRAY['Lunes'], '19:00', '21:00', 15, 13),
+(87, 2, 3, 'SECURITY101', 'MANANA', ARRAY['Viernes'], '08:00', '10:00', 16, 14),
+(88, 2, 3, 'DEVOPS101', 'TARDE', ARRAY['Miércoles'], '14:00', '18:00', 17, 15),
+
+-- Periodo 2025-1, Sede Monserrat
+(89, 3, 1, 'PROG101', 'MANANA', ARRAY['Lunes'], '08:00', '10:00', 19, 17),
+(90, 3, 1, 'PROG102', 'TARDE', ARRAY['Martes'], '14:00', '16:00', 18, 16),
+(91, 3, 1, 'BD101', 'NOCHE', ARRAY['Miércoles'], '19:00', '21:00', 20, 18),
+(92, 3, 1, 'BD102', 'MANANA', ARRAY['Jueves'], '10:30', '12:30', 17, 15),
+(93, 3, 1, 'ALGO101', 'TARDE', ARRAY['Lunes'], '14:00', '16:00', 15, 13),
+(94, 3, 1, 'WEB101', 'NOCHE', ARRAY['Martes'], '19:00', '21:00', 16, 14),
+(95, 3, 1, 'MATH101', 'MANANA', ARRAY['Viernes'], '08:00', '10:00', 19, 17),
+(96, 3, 1, 'STAT101', 'TARDE', ARRAY['Jueves'], '14:00', '16:00', 18, 16),
+(97, 3, 1, 'SECURITY101', 'MANANA', ARRAY['Viernes'], '08:00', '12:00', 14, 12),
+(98, 3, 1, 'DEVOPS101', 'NOCHE', ARRAY['Jueves'], '19:00', '21:00', 15, 13),
+
+-- Periodo 2025-1, Sede Belgrano
+(99, 3, 2, 'PROG101', 'TARDE', ARRAY['Martes'], '14:00', '16:00', 17, 15),
+(100, 3, 2, 'PROG102', 'MANANA', ARRAY['Lunes'], '08:00', '10:00', 18, 16),
+(101, 3, 2, 'BD101', 'TARDE', ARRAY['Martes'], '16:30', '18:30', 19, 17),
+(102, 3, 2, 'BD102', 'NOCHE', ARRAY['Miércoles'], '19:00', '21:00', 20, 18),
+(103, 3, 2, 'ALGO101', 'MANANA', ARRAY['Viernes'], '08:00', '12:00', 16, 14),
+(104, 3, 2, 'WEB101', 'TARDE', ARRAY['Lunes'], '14:00', '16:00', 17, 15),
+(105, 3, 2, 'MATH101', 'NOCHE', ARRAY['Martes'], '19:00', '21:00', 18, 16),
+(106, 3, 2, 'STAT101', 'MANANA', ARRAY['Miércoles'], '10:30', '12:30', 19, 17),
+(107, 3, 2, 'MOBILE101', 'TARDE', ARRAY['Jueves'], '14:00', '16:00', 15, 13),
+(108, 3, 2, 'CLOUD101', 'NOCHE', ARRAY['Lunes'], '19:00', '21:00', 16, 14),
+
+-- Periodo 2025-1, Sede Flores
+(109, 3, 3, 'PROG101', 'MANANA', ARRAY['Martes'], '08:00', '10:00', 17, 15),
+(110, 3, 3, 'PROG102', 'TARDE', ARRAY['Lunes'], '16:30', '18:30', 18, 16),
+(111, 3, 3, 'BD101', 'MANANA', ARRAY['Miércoles'], '10:30', '12:30', 19, 17),
+(112, 3, 3, 'BD102', 'NOCHE', ARRAY['Jueves'], '19:00', '21:00', 20, 18),
+(113, 3, 3, 'ALGO101', 'TARDE', ARRAY['Viernes'], '14:00', '16:00', 14, 12),
+(114, 3, 3, 'WEB101', 'MANANA', ARRAY['Martes'], '08:00', '10:00', 15, 13),
+(115, 3, 3, 'MATH101', 'TARDE', ARRAY['Lunes'], '14:00', '16:00', 17, 15),
+(116, 3, 3, 'STAT101', 'NOCHE', ARRAY['Martes'], '19:00', '21:00', 18, 16),
+(117, 3, 3, 'ARCH101', 'MANANA', ARRAY['Jueves'], '08:00', '12:00', 16, 14),
+(118, 3, 3, 'REDES101', 'TARDE', ARRAY['Miércoles'], '14:00', '16:00', 19, 17);
+
+-- ==================== CARGAR DEMANDA_SNAPSHOT ====================
+-- Solicitudes de inscripción por materia (independiente de la oferta de clases).
+-- Se calcula con un factor de demanda sobre el total de inscriptos actuales para simular
+-- escenarios donde la demanda supera o no a la oferta disponible.
+INSERT INTO demanda_snapshot (materia_codigo, solicitudes)
+SELECT materia_codigo, CEIL(SUM(inscriptos) * 1.15)::INT
+FROM clase
+GROUP BY materia_codigo;
+
+-- ==================== ASIGNAR AULA A CADA CLASE (tabla ASIGNACION) ====================
+-- Asigna un aula de la misma sede en forma round-robin y calcula sillas vacías
+-- (capacidad_total del aula - inscriptos_con_reserva de la clase).
+WITH clase_ordenada AS (
+	SELECT id, sede_id, inscriptos_con_reserva,
+		   ROW_NUMBER() OVER (PARTITION BY sede_id ORDER BY id) AS rn
+	FROM clase
+),
+aula_ordenada AS (
+	SELECT id, sede_id, capacidad_total,
+		   ROW_NUMBER() OVER (PARTITION BY sede_id ORDER BY capacidad_total DESC) AS rn,
+		   COUNT(*) OVER (PARTITION BY sede_id) AS total
+	FROM aula
+	WHERE capacidad_total > 0
+)
+INSERT INTO asignacion (clase_id, aula_id, origen, sillas_vacias)
+SELECT co.id, a.id, 'REPLICA', a.capacidad_total - co.inscriptos_con_reserva
+FROM clase_ordenada co
+JOIN aula_ordenada a
+  ON a.sede_id = co.sede_id
+ AND a.rn = ((co.rn - 1) % a.total) + 1;
+
+-- ==================== ASIGNAR DOCENTES A CADA CLASE ====================
+INSERT INTO clase_docente (clase_id, docente_id)
+SELECT c.id, (1 + (c.id % (SELECT COUNT(*) FROM docente)))::INT
+FROM clase c;
+
+-- ==================== VERIFICACIONES ====================
+SELECT COUNT(*) as total_clases FROM clase;
+SELECT COUNT(*) as total_periodos FROM periodo;
+SELECT COUNT(*) as total_sedes FROM sede;
+SELECT COUNT(*) as total_materias FROM materia;
+SELECT COUNT(*) as total_docentes FROM docente;
+SELECT COUNT(*) as total_aulas FROM aula;
+SELECT COUNT(*) as total_asignaciones FROM asignacion;
+SELECT COUNT(*) as total_demanda_snapshot FROM demanda_snapshot;
+SELECT COUNT(*) as clases_sin_asignacion FROM clase c LEFT JOIN asignacion a ON a.clase_id = c.id WHERE a.id IS NULL;
+SELECT COUNT(*) as total_carreras FROM carrera;
+SELECT COUNT(*) as total_planificaciones FROM planificacion;

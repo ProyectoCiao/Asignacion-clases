@@ -1,0 +1,194 @@
+using UadeAulas.Api.Data;
+using UadeAulas.Api.Dtos;
+using UadeAulas.Api.Models;
+
+namespace UadeAulas.Api.Services;
+
+public class GrabarService
+{
+    private readonly Repository _repository;
+    private readonly OfertaService _ofertaService;
+
+    public GrabarService(Repository repository, OfertaService ofertaService)
+    {
+        _repository = repository;
+        _ofertaService = ofertaService;
+    }
+
+    /// <summary>
+    /// Graba los cambios de asignación de aulas. Detecta choques y sobrecupo.
+    /// </summary>
+    public async Task<GrabarResponse> GrabarCambiosAsync(GrabarRequest request)
+    {
+        var response = new GrabarResponse();
+
+        // Validar confirmación
+        if (request.Confirmacion != "GRABAR")
+        {
+            throw new InvalidOperationException("Confirmación inválida. Debe ser exactamente 'GRABAR'");
+        }
+
+        // Precargar datos
+        var clases = await _repository.GetClasesAsync();
+        var aulas = await _repository.GetAulasAsync();
+        var materias = await _repository.GetMateriasAsync();
+        var sedes = await _repository.GetSedesAsync();
+        var asignacionesExistentes = await _repository.GetAllAsignacionesAsync();
+
+        // Aplicar cambios
+        foreach (var cambio in request.Cambios)
+        {
+            var clase = clases.FirstOrDefault(c => c.Id == cambio.Id);
+            if (clase == null) continue;
+
+            // Actualizar clase
+            await _repository.UpdateClaseAsync(cambio.Id, cambio.Turno, cambio.InscriptosConReserva);
+
+            // Calcular sillas vacías
+            int sillasVacias = 0;
+            if (cambio.AulaId.HasValue)
+            {
+                var aula = aulas.FirstOrDefault(a => a.Id == cambio.AulaId);
+                if (aula != null)
+                    sillasVacias = aula.CapacidadTotal - cambio.InscriptosConReserva;
+            }
+
+            // Actualizar asignación
+            await _repository.UpsertAsignacionAsync(cambio.Id, cambio.AulaId, sillasVacias, "MANUAL");
+        }
+
+        // Recargar datos post-cambios (solo el período vigente: clases de otros períodos no chocan)
+        var periodo = await _repository.GetPeriodoActualAsync();
+        var clasesPostCambios = await _repository.GetClasesAsync(periodoId: periodo?.Id);
+        var asignacionesPostCambios = await _repository.GetAllAsignacionesAsync();
+
+        // Detectar choques (misma aula, días que se solapan, horarios que se intersecan)
+        response.Choques = DetectarChoques(clasesPostCambios, asignacionesPostCambios, aulas, materias);
+
+        // Detectar sobrecupo
+        response.Sobrecupo = DetectarSobrecupo(clasesPostCambios, asignacionesPostCambios, aulas);
+
+        // Retornar filas actualizadas
+        response.Filas = await _ofertaService.GetOfertaAsync();
+
+        return response;
+    }
+
+    /// <summary>
+    /// Detecta choques: misma aula con intersección de días y solapamiento de horarios
+    /// </summary>
+    private List<ChoqueDto> DetectarChoques(
+        List<Clase> clases,
+        List<Asignacion> asignaciones,
+        List<Aula> aulas,
+        List<Materia> materias)
+    {
+        var choques = new List<ChoqueDto>();
+
+        // Agrupar por aula asignada
+        var clasePorAula = new Dictionary<int, List<(Clase clase, Asignacion asignacion)>>();
+
+        foreach (var asignacion in asignaciones.Where(a => a.AulaId.HasValue))
+        {
+            var clase = clases.FirstOrDefault(c => c.Id == asignacion.ClaseId);
+            if (clase == null) continue;
+
+            if (!clasePorAula.ContainsKey(asignacion.AulaId.Value))
+                clasePorAula[asignacion.AulaId.Value] = new();
+
+            clasePorAula[asignacion.AulaId.Value].Add((clase, asignacion));
+        }
+
+        // Detectar conflictos en cada aula
+        foreach (var (aulaId, clasesEnAula) in clasePorAula)
+        {
+            var aula = aulas.FirstOrDefault(a => a.Id == aulaId);
+            if (aula == null) continue;
+
+            // Comparar cada par de clases en la misma aula
+            for (int i = 0; i < clasesEnAula.Count; i++)
+            {
+                for (int j = i + 1; j < clasesEnAula.Count; j++)
+                {
+                    var (clase1, _) = clasesEnAula[i];
+                    var (clase2, _) = clasesEnAula[j];
+
+                    // Verificar intersección de días
+                    var diasIntercepcion = clase1.Dias?.Intersect(clase2.Dias ?? Array.Empty<string>()).ToList()
+                        ?? new List<string>();
+
+                    if (diasIntercepcion.Count == 0) continue;
+
+                    // Verificar solapamiento de horarios
+                    if (HorariosSesolapan(clase1.HorarioDesde, clase1.HorarioHasta, clase2.HorarioDesde, clase2.HorarioHasta))
+                    {
+                        var materia1 = materias.FirstOrDefault(m => m.Codigo == clase1.MateriaCodigo);
+                        var materia2 = materias.FirstOrDefault(m => m.Codigo == clase2.MateriaCodigo);
+
+                        choques.Add(new ChoqueDto
+                        {
+                            ClaseId = clase1.Id,
+                            NroClase = clase1.NroClase,
+                            Materia = materia1?.Nombre ?? clase1.MateriaCodigo,
+                            AulaCodigo = aula.Codigo,
+                            Horario = $"{clase1.HorarioDesde:HH:mm}-{clase1.HorarioHasta:HH:mm}",
+                            Motivo = $"Choque con clase {clase2.NroClase} ({(diasIntercepcion.FirstOrDefault() ?? "?")})"
+                        });
+
+                        choques.Add(new ChoqueDto
+                        {
+                            ClaseId = clase2.Id,
+                            NroClase = clase2.NroClase,
+                            Materia = materia2?.Nombre ?? clase2.MateriaCodigo,
+                            AulaCodigo = aula.Codigo,
+                            Horario = $"{clase2.HorarioDesde:HH:mm}-{clase2.HorarioHasta:HH:mm}",
+                            Motivo = $"Choque con clase {clase1.NroClase} ({(diasIntercepcion.FirstOrDefault() ?? "?")})"
+                        });
+                    }
+                }
+            }
+        }
+
+        return choques;
+    }
+
+    /// <summary>
+    /// Detecta sobrecupo: inscriptos_con_reserva > capacidad_total del aula
+    /// </summary>
+    private List<SobrecupoDto> DetectarSobrecupo(
+        List<Clase> clases,
+        List<Asignacion> asignaciones,
+        List<Aula> aulas)
+    {
+        var sobrecupo = new List<SobrecupoDto>();
+
+        foreach (var asignacion in asignaciones.Where(a => a.AulaId.HasValue))
+        {
+            var clase = clases.FirstOrDefault(c => c.Id == asignacion.ClaseId);
+            var aula = aulas.FirstOrDefault(a => a.Id == asignacion.AulaId);
+
+            if (clase == null || aula == null) continue;
+
+            if (clase.InscriptosConReserva > aula.CapacidadTotal)
+            {
+                sobrecupo.Add(new SobrecupoDto
+                {
+                    ClaseId = clase.Id,
+                    NroClase = clase.NroClase,
+                    Materia = clase.MateriaCodigo,
+                    Inscriptos = clase.InscriptosConReserva,
+                    CapacidadAula = aula.CapacidadTotal,
+                    Exceso = clase.InscriptosConReserva - aula.CapacidadTotal
+                });
+            }
+        }
+
+        return sobrecupo;
+    }
+
+    private bool HorariosSesolapan(TimeOnly desde1, TimeOnly hasta1, TimeOnly desde2, TimeOnly hasta2)
+    {
+        // Dos intervalos se solapan si: desde1 < hasta2 AND desde2 < hasta1
+        return desde1 < hasta2 && desde2 < hasta1;
+    }
+}

@@ -1,0 +1,57 @@
+﻿using UadeAulas.Api.Dtos;
+using UadeAulas.Api.Services;
+
+namespace UadeAulas.Api.Endpoints;
+
+public static class OfertaEndpoints
+{
+    public static void MapOfertaEndpoints(this WebApplication app)
+    {
+        var group = app.MapGroup("/oferta")
+            .WithTags("Oferta");
+
+        group.MapGet("/", GetOferta)
+            .WithName("GetOferta")
+            .Produces<List<OfertaRowDto>>();
+
+        group.MapGet("/catalogos", GetCatalogos)
+            .WithName("GetCatalogos")
+            .Produces<CatalogosDto>();
+    }
+
+    public static async Task<IResult> GetOferta(
+        OfertaService service,
+        int? sede = null,
+        string? turno = null,
+        string? q = null,
+        string? facultad = null)
+    {
+        try
+        {
+            var filas = await service.GetOfertaAsync(sede, turno, q);
+
+            // Filtrar por facultad si se proporciona
+            if (!string.IsNullOrEmpty(facultad))
+                filas = filas.Where(f => f.Facultad == facultad).ToList();
+
+            return Results.Ok(filas);
+        }
+        catch (Exception ex)
+        {
+            return Results.BadRequest(new { error = ex.Message });
+        }
+    }
+
+    public static async Task<IResult> GetCatalogos(OfertaService service)
+    {
+        try
+        {
+            var catalogos = await service.GetCatalogosAsync();
+            return Results.Ok(catalogos);
+        }
+        catch (Exception ex)
+        {
+            return Results.BadRequest(new { error = ex.Message });
+        }
+    }
+}

@@ -1,0 +1,194 @@
+﻿using ClosedXML.Excel;
+using UadeAulas.Api.Data;
+using UadeAulas.Api.Dtos;
+using UadeAulas.Api.Models;
+
+namespace UadeAulas.Api.Services;
+
+/// <summary>
+/// Importa el excel "Materias_carreras" (programacion de clases + relacion materia-carrera +
+/// docentes regulares). Cada fila representa una clase concreta de una materia, en una carrera,
+/// con su horario/turno/docentes. Se crea (si no existe) periodo, planificacion en estado BORRADOR,
+/// carrera, materia, docentes, y se inserta la clase.
+/// </summary>
+public class MateriaCarreraImportService
+{
+    private readonly Repository _repository;
+
+    private static readonly string[] ColumnasRequeridas =
+    {
+        "Facultad", "Sede", "Ciclo", "Periodo", "Turno", "Horario", "CódigoMateria", "Materia",
+        "CargaHorariaMateria", "Modalidad", "Idioma", "Inscriptos Por Clase Con Reserva",
+        "Docentes", "Dias De Cursada", "Régimen"
+    };
+
+    public MateriaCarreraImportService(Repository repository)
+    {
+        _repository = repository;
+    }
+
+    public async Task<ImportResultDto> ImportarAsync(
+        Stream excelStream, string? carreraNombre = null, string? cicloOverride = null, string? nombrePeriodoOverride = null)
+    {
+        var resultado = new ImportResultDto();
+
+        using var workbook = new XLWorkbook(excelStream);
+        var sheet = workbook.Worksheets.First();
+        var headerRow = sheet.FirstRowUsed();
+        var columnas = MapearColumnas(headerRow);
+
+        foreach (var requerida in ColumnasRequeridas)
+        {
+            if (!columnas.ContainsKey(requerida))
+            {
+                resultado.Errores.Add($"Falta la columna requerida '{requerida}' en el excel.");
+                return resultado;
+            }
+        }
+
+        var sedeCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        var carreraCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        var docenteCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        var periodoCache = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        var planificacionCache = new Dictionary<int, int>();
+
+        var filaActual = headerRow.RowBelow();
+        while (!filaActual.IsEmpty())
+        {
+            resultado.FilasProcesadas++;
+            try
+            {
+                var facultad = Texto(filaActual, columnas, "Facultad");
+                var departamento = Texto(filaActual, columnas, "Departamento");
+                var nombreSede = Texto(filaActual, columnas, "Sede");
+                var ciclo = Texto(filaActual, columnas, "Ciclo");
+                var nombrePeriodo = Texto(filaActual, columnas, "Periodo");
+                var turno = Texto(filaActual, columnas, "Turno");
+                var horario = Texto(filaActual, columnas, "Horario");
+                var codigoMateria = Texto(filaActual, columnas, "CódigoMateria");
+                var nombreMateria = Texto(filaActual, columnas, "Materia");
+                var cargaHoraria = EnteroOCero(filaActual, columnas, "CargaHorariaMateria");
+                var modalidad = Texto(filaActual, columnas, "Modalidad");
+                var idioma = Texto(filaActual, columnas, "Idioma");
+                var nivelIdioma = Texto(filaActual, columnas, "Nivel Idioma");
+                var inscriptosSinReserva = EnteroOCero(filaActual, columnas, "Inscriptos Por ClaseSin Considerar Reservas");
+                var inscriptosConReserva = EnteroOCero(filaActual, columnas, "Inscriptos Por Clase Con Reserva");
+                var docentesTexto = Texto(filaActual, columnas, "Docentes");
+                var diasTexto = Texto(filaActual, columnas, "Dias De Cursada");
+                var regimen = Texto(filaActual, columnas, "Régimen");
+                var origenExcelId = Texto(filaActual, columnas, "Id");
+                var carreraNombreFila = carreraNombre ?? departamento ?? "Sin Carrera";
+
+                if (string.IsNullOrWhiteSpace(codigoMateria) || string.IsNullOrWhiteSpace(nombreSede))
+                {
+                    resultado.Errores.Add($"Fila {filaActual.RowNumber()}: 'CódigoMateria' o 'Sede' vacíos, se omite.");
+                    filaActual = filaActual.RowBelow();
+                    continue;
+                }
+
+                if (!sedeCache.TryGetValue(nombreSede, out var sedeId))
+                {
+                    sedeId = await _repository.GetOrCreateSedeIdAsync(nombreSede);
+                    sedeCache[nombreSede] = sedeId;
+                }
+
+                if (!carreraCache.TryGetValue(carreraNombreFila, out var carreraId))
+                {
+                    carreraId = await _repository.GetOrCreateCarreraIdAsync(carreraNombreFila, facultad);
+                    carreraCache[carreraNombreFila] = carreraId;
+                }
+
+                if (!periodoCache.TryGetValue(ciclo, out var periodoId))
+                {
+                    periodoId = await _repository.GetOrCreatePeriodoIdAsync(ciclo, nombrePeriodo);
+                    periodoCache[ciclo] = periodoId;
+                }
+
+                if (!planificacionCache.TryGetValue(periodoId, out var planificacionId))
+                {
+                    planificacionId = await _repository.GetOrCreatePlanificacionBorradorAsync(periodoId, nombrePeriodo);
+                    planificacionCache[periodoId] = planificacionId;
+                }
+
+                await _repository.UpsertMateriaAsync(new Materia
+                {
+                    Codigo = codigoMateria,
+                    Nombre = nombreMateria,
+                    Facultad = facultad,
+                    Departamento = departamento,
+                    CargaHoraria = cargaHoraria
+                });
+
+                await _repository.UpsertMateriaCarreraAsync(codigoMateria, carreraId, ciclo, modalidad, idioma, nivelIdioma, regimen, origenExcelId);
+
+                var (horarioDesde, horarioHasta) = ParsearHorario(horario);
+                var dias = ParsearDias(diasTexto);
+                var nroClase = await _repository.GetNextNroClaseAsync();
+
+                var claseId = await _repository.CreateClaseConPlanificacionAsync(
+                    nroClase, periodoId, planificacionId, sedeId, codigoMateria, turno,
+                    horarioDesde, horarioHasta, dias, modalidad, idioma, regimen,
+                    inscriptosSinReserva, inscriptosConReserva);
+
+                foreach (var nombreDocente in ParsearDocentes(docentesTexto))
+                {
+                    if (!docenteCache.TryGetValue(nombreDocente, out var docenteId))
+                    {
+                        docenteId = await _repository.GetOrCreateDocenteIdAsync(nombreDocente);
+                        docenteCache[nombreDocente] = docenteId;
+                    }
+                    await _repository.UpsertDocenteMateriaAsync(docenteId, codigoMateria);
+                    await _repository.AsignarDocenteAClaseAsync(claseId, docenteId);
+                }
+
+                resultado.FilasCreadas++;
+            }
+            catch (Exception ex)
+            {
+                resultado.Errores.Add($"Fila {filaActual.RowNumber()}: {ex.Message}");
+            }
+
+            filaActual = filaActual.RowBelow();
+        }
+
+        return resultado;
+    }
+
+    private static Dictionary<string, int> MapearColumnas(IXLRow headerRow)
+    {
+        var columnas = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        foreach (var celda in headerRow.CellsUsed())
+        {
+            var nombre = celda.GetString().Trim();
+            if (!string.IsNullOrEmpty(nombre))
+                columnas[nombre] = celda.Address.ColumnNumber;
+        }
+        return columnas;
+    }
+
+    private static string Texto(IXLRow fila, Dictionary<string, int> columnas, string nombreColumna)
+        => columnas.TryGetValue(nombreColumna, out var col) ? fila.Cell(col).GetString().Trim() : string.Empty;
+
+    private static int EnteroOCero(IXLRow fila, Dictionary<string, int> columnas, string nombreColumna)
+    {
+        if (!columnas.TryGetValue(nombreColumna, out var col)) return 0;
+        var celda = fila.Cell(col);
+        if (celda.TryGetValue<int>(out var valor)) return valor;
+        return int.TryParse(celda.GetString().Trim(), out var parsed) ? parsed : 0;
+    }
+
+    private static (TimeOnly desde, TimeOnly hasta) ParsearHorario(string horario)
+    {
+        // Formatos esperados: "08:00-10:00" o "08:00 a 10:00"
+        var partes = horario.Split(new[] { '-', 'a' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (partes.Length == 2 && TimeOnly.TryParse(partes[0], out var desde) && TimeOnly.TryParse(partes[1], out var hasta))
+            return (desde, hasta);
+        return (new TimeOnly(8, 0), new TimeOnly(10, 0));
+    }
+
+    private static string[] ParsearDias(string diasTexto)
+        => diasTexto.Split(new[] { ',', ';', '/' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+    private static string[] ParsearDocentes(string docentesTexto)
+        => docentesTexto.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+}

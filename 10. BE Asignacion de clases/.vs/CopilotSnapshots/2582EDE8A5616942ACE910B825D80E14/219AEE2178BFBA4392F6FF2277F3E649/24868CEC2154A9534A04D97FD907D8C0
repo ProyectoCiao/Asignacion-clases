@@ -1,0 +1,516 @@
+﻿using Npgsql;
+using UadeAulas.Api.Models;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace UadeAulas.Api.Data;
+
+public class Repository
+{
+    private readonly string _connectionString;
+
+    public Repository(IConfiguration configuration)
+    {
+        _connectionString = configuration.GetConnectionString("DefaultConnection") 
+            ?? throw new InvalidOperationException("Connection string not found");
+    }
+
+    private async Task<NpgsqlConnection> GetConnectionAsync()
+    {
+        var connection = new NpgsqlConnection(_connectionString);
+        await connection.OpenAsync();
+        return connection;
+    }
+
+    // Sedes
+    public async Task<List<Sede>> GetSedesAsync()
+    {
+        var sedes = new List<Sede>();
+        using var conn = await GetConnectionAsync();
+        using var cmd = new NpgsqlCommand("SELECT id, codigo, nombre FROM sede ORDER BY nombre", conn);
+        using var reader = await cmd.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            sedes.Add(new Sede
+            {
+                Id = reader.GetInt32(0),
+                Codigo = reader.GetString(1),
+                Nombre = reader.GetString(2)
+            });
+        }
+        return sedes;
+    }
+
+    // Aulas
+    public async Task<List<Aula>> GetAulasAsync(int? sedeId = null)
+    {
+        var aulas = new List<Aula>();
+        using var conn = await GetConnectionAsync();
+
+        var query = @"SELECT id, sede_id, codigo, tipo_grupo, tipo_detalle, piso, 
+                           capacidad_real, capacidad_total, equipamiento, activa, edificio 
+                    FROM aula";
+
+        if (sedeId.HasValue)
+            query += " WHERE sede_id = @sedeId";
+
+        query += " ORDER BY codigo";
+
+        using var cmd = new NpgsqlCommand(query, conn);
+        if (sedeId.HasValue)
+            cmd.Parameters.AddWithValue("@sedeId", sedeId.Value);
+
+        using var reader = await cmd.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            aulas.Add(new Aula
+            {
+                Id = reader.GetInt32(0),
+                SedeId = reader.GetInt32(1),
+                Codigo = reader.GetString(2),
+                TipoGrupo = reader.GetString(3),
+                TipoDetalle = reader.IsDBNull(4) ? null : reader.GetString(4),
+                Piso = reader.GetInt32(5),
+                CapacidadReal = reader.GetInt32(6),
+                CapacidadTotal = reader.GetInt32(7),
+                Equipamiento = reader.IsDBNull(8) ? null : (string[])reader.GetValue(8),
+                Activa = reader.GetBoolean(9),
+                Edificio = reader.IsDBNull(10) ? null : reader.GetString(10)
+            });
+        }
+        return aulas;
+    }
+
+    // Busca una sede por nombre (case-insensitive); si no existe la crea con codigo derivado del nombre.
+    public async Task<int> GetOrCreateSedeIdAsync(string nombreSede)
+    {
+        using var conn = await GetConnectionAsync();
+        using (var cmdSelect = new NpgsqlCommand("SELECT id FROM sede WHERE UPPER(nombre) = UPPER(@nombre) OR UPPER(codigo) = UPPER(@nombre)", conn))
+        {
+            cmdSelect.Parameters.AddWithValue("@nombre", nombreSede);
+            var existingId = await cmdSelect.ExecuteScalarAsync();
+            if (existingId != null)
+                return (int)existingId;
+        }
+
+        var codigo = nombreSede.Trim().ToUpperInvariant().Replace(" ", "_");
+        using var cmdInsert = new NpgsqlCommand(
+            "INSERT INTO sede (codigo, nombre) VALUES (@codigo, @nombre) RETURNING id", conn);
+        cmdInsert.Parameters.AddWithValue("@codigo", codigo);
+        cmdInsert.Parameters.AddWithValue("@nombre", nombreSede.Trim());
+        return (int)(await cmdInsert.ExecuteScalarAsync())!;
+    }
+
+    // Upsert de aula por (sede_id, codigo). Devuelve el id del aula insertada/actualizada.
+    public async Task<int> UpsertAulaAsync(Aula aula)
+    {
+        using var conn = await GetConnectionAsync();
+        using var cmd = new NpgsqlCommand(@"
+            INSERT INTO aula (sede_id, codigo, tipo_grupo, tipo_detalle, piso, capacidad_real, capacidad_total, equipamiento, activa, edificio)
+            VALUES (@sedeId, @codigo, @tipoGrupo, @tipoDetalle, @piso, @capacidadReal, @capacidadTotal, @equipamiento, @activa, @edificio)
+            ON CONFLICT (sede_id, codigo) DO UPDATE SET
+                tipo_grupo = EXCLUDED.tipo_grupo,
+                tipo_detalle = EXCLUDED.tipo_detalle,
+                piso = EXCLUDED.piso,
+                capacidad_real = EXCLUDED.capacidad_real,
+                capacidad_total = EXCLUDED.capacidad_total,
+                edificio = EXCLUDED.edificio,
+                activa = EXCLUDED.activa
+            RETURNING id", conn);
+        cmd.Parameters.AddWithValue("@sedeId", aula.SedeId);
+        cmd.Parameters.AddWithValue("@codigo", aula.Codigo);
+        cmd.Parameters.AddWithValue("@tipoGrupo", aula.TipoGrupo);
+        cmd.Parameters.AddWithValue("@tipoDetalle", (object?)aula.TipoDetalle ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@piso", aula.Piso);
+        cmd.Parameters.AddWithValue("@capacidadReal", aula.CapacidadReal);
+        cmd.Parameters.AddWithValue("@capacidadTotal", aula.CapacidadTotal);
+        cmd.Parameters.AddWithValue("@equipamiento", (object?)aula.Equipamiento ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@activa", aula.Activa);
+        cmd.Parameters.AddWithValue("@edificio", (object?)aula.Edificio ?? DBNull.Value);
+        return (int)(await cmd.ExecuteScalarAsync())!;
+    }
+
+    public async Task<Aula?> GetAulaByCodigoAsync(string codigo, int sedeId)
+    {
+        using var conn = await GetConnectionAsync();
+        using var cmd = new NpgsqlCommand(@"SELECT id, sede_id, codigo, tipo_grupo, tipo_detalle, piso,
+                           capacidad_real, capacidad_total, equipamiento, activa, edificio
+                    FROM aula WHERE codigo = @codigo AND sede_id = @sedeId", conn);
+        cmd.Parameters.AddWithValue("@codigo", codigo);
+        cmd.Parameters.AddWithValue("@sedeId", sedeId);
+        using var reader = await cmd.ExecuteReaderAsync();
+        if (!await reader.ReadAsync())
+            return null;
+
+        return new Aula
+        {
+            Id = reader.GetInt32(0),
+            SedeId = reader.GetInt32(1),
+            Codigo = reader.GetString(2),
+            TipoGrupo = reader.GetString(3),
+            TipoDetalle = reader.IsDBNull(4) ? null : reader.GetString(4),
+            Piso = reader.GetInt32(5),
+            CapacidadReal = reader.GetInt32(6),
+            CapacidadTotal = reader.GetInt32(7),
+            Equipamiento = reader.IsDBNull(8) ? null : (string[])reader.GetValue(8),
+            Activa = reader.GetBoolean(9),
+            Edificio = reader.IsDBNull(10) ? null : reader.GetString(10)
+        };
+    }
+
+    // Materias
+    public async Task<List<Materia>> GetMateriasAsync()
+    {
+        var materias = new List<Materia>();
+        using var conn = await GetConnectionAsync();
+        using var cmd = new NpgsqlCommand(@"SELECT codigo, nombre, facultad, departamento, carga_horaria 
+                                             FROM materia ORDER BY nombre", conn);
+        using var reader = await cmd.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            materias.Add(new Materia
+            {
+                Codigo = reader.GetString(0),
+                Nombre = reader.GetString(1),
+                Facultad = reader.IsDBNull(2) ? null : reader.GetString(2),
+                Departamento = reader.IsDBNull(3) ? null : reader.GetString(3),
+                CargaHoraria = reader.GetInt32(4)
+            });
+        }
+        return materias;
+    }
+
+    // Docentes
+    public async Task<List<Docente>> GetDocentesAsync()
+    {
+        var docentes = new List<Docente>();
+        using var conn = await GetConnectionAsync();
+        using var cmd = new NpgsqlCommand("SELECT id, nombre FROM docente ORDER BY nombre", conn);
+        using var reader = await cmd.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            docentes.Add(new Docente
+            {
+                Id = reader.GetInt32(0),
+                Nombre = reader.GetString(1)
+            });
+        }
+        return docentes;
+    }
+
+    // Periodos
+    public async Task<List<Periodo>> GetPeriodosAsync()
+    {
+        var periodos = new List<Periodo>();
+        using var conn = await GetConnectionAsync();
+        using var cmd = new NpgsqlCommand(@"SELECT id, ciclo, nombre, fecha_desde, fecha_hasta 
+                                             FROM periodo ORDER BY fecha_desde DESC", conn);
+        using var reader = await cmd.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            periodos.Add(new Periodo
+            {
+                Id = reader.GetInt32(0),
+                Ciclo = reader.GetString(1),
+                Nombre = reader.GetString(2),
+                FechaDesde = reader.GetDateTime(3),
+                FechaHasta = reader.GetDateTime(4)
+            });
+        }
+        return periodos;
+    }
+
+    // Clases con joins
+    public async Task<List<Clase>> GetClasesAsync(int? sedeId = null, string? turno = null, string? q = null)
+    {
+        var clases = new List<Clase>();
+        using var conn = await GetConnectionAsync();
+
+        var query = @"SELECT c.id, c.nro_clase, c.periodo_id, c.sede_id, c.materia_codigo, 
+                           c.turno, c.horario_desde, c.horario_hasta, c.dias, c.regimen, 
+                           c.idioma, c.modalidad, c.inscriptos, c.inscriptos_con_reserva, c.packs
+                    FROM clase c WHERE 1=1";
+
+        if (sedeId.HasValue)
+            query += " AND c.sede_id = @sedeId";
+        if (!string.IsNullOrEmpty(turno))
+            query += " AND c.turno = @turno";
+
+        query += " ORDER BY c.nro_clase";
+
+        using var cmd = new NpgsqlCommand(query, conn);
+        if (sedeId.HasValue)
+            cmd.Parameters.AddWithValue("@sedeId", sedeId.Value);
+        if (!string.IsNullOrEmpty(turno))
+            cmd.Parameters.AddWithValue("@turno", turno);
+
+        using var reader = await cmd.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            clases.Add(new Clase
+            {
+                Id = reader.GetInt64(0),
+                NroClase = reader.GetInt32(1),
+                PeriodoId = reader.GetInt32(2),
+                SedeId = reader.GetInt32(3),
+                MateriaCodigo = reader.GetString(4),
+                Turno = reader.GetString(5),
+                HorarioDesde = reader.GetFieldValue<TimeOnly>(6),
+                HorarioHasta = reader.GetFieldValue<TimeOnly>(7),
+                Dias = reader.IsDBNull(8) ? null : (string[])reader.GetValue(8),
+                Regimen = reader.IsDBNull(9) ? null : reader.GetString(9),
+                Idioma = reader.IsDBNull(10) ? null : reader.GetString(10),
+                Modalidad = reader.IsDBNull(11) ? null : reader.GetString(11),
+                Inscriptos = reader.GetInt32(12),
+                InscriptosConReserva = reader.GetInt32(13),
+                Packs = reader.IsDBNull(14) ? null : (string[])reader.GetValue(14)
+            });
+        }
+        return clases;
+    }
+
+    // Asignaciones
+    public async Task<Asignacion?> GetAsignacionByClaseIdAsync(long claseId)
+    {
+        using var conn = await GetConnectionAsync();
+        using var cmd = new NpgsqlCommand(@"SELECT id, clase_id, aula_id, origen, sillas_vacias 
+                                             FROM asignacion WHERE clase_id = @claseId", conn);
+        cmd.Parameters.AddWithValue("@claseId", claseId);
+
+        using var reader = await cmd.ExecuteReaderAsync();
+        if (await reader.ReadAsync())
+        {
+            return new Asignacion
+            {
+                Id = reader.GetInt64(0),
+                ClaseId = reader.GetInt64(1),
+                AulaId = reader.IsDBNull(2) ? null : reader.GetInt32(2),
+                Origen = reader.GetString(3),
+                SillasVacias = reader.GetInt32(4)
+            };
+        }
+        return null;
+    }
+
+    // Docentes de una clase
+    public async Task<List<Docente>> GetDocentesByClaseIdAsync(long claseId)
+    {
+        var docentes = new List<Docente>();
+        using var conn = await GetConnectionAsync();
+        using var cmd = new NpgsqlCommand(@"SELECT d.id, d.nombre 
+                                             FROM docente d
+                                             INNER JOIN clase_docente cd ON d.id = cd.docente_id
+                                             WHERE cd.clase_id = @claseId
+                                             ORDER BY d.nombre", conn);
+        cmd.Parameters.AddWithValue("@claseId", claseId);
+
+        using var reader = await cmd.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            docentes.Add(new Docente
+            {
+                Id = reader.GetInt32(0),
+                Nombre = reader.GetString(1)
+            });
+        }
+        return docentes;
+    }
+
+    // Actualizar clase (turno e inscriptos_con_reserva)
+    public async Task UpdateClaseAsync(long claseId, string turno, int inscriptosConReserva)
+    {
+        using var conn = await GetConnectionAsync();
+        using var cmd = new NpgsqlCommand(@"UPDATE clase 
+                                             SET turno = @turno, inscriptos_con_reserva = @inscriptosConReserva
+                                             WHERE id = @claseId", conn);
+        cmd.Parameters.AddWithValue("@claseId", claseId);
+        cmd.Parameters.AddWithValue("@turno", turno);
+        cmd.Parameters.AddWithValue("@inscriptosConReserva", inscriptosConReserva);
+
+        await cmd.ExecuteNonQueryAsync();
+    }
+
+    // Actualizar o crear asignación
+    public async Task UpsertAsignacionAsync(long claseId, int? aulaId, int sillasVacias, string origen)
+    {
+        using var conn = await GetConnectionAsync();
+
+        // Primero intentar actualizar
+        using var cmdUpdate = new NpgsqlCommand(@"UPDATE asignacion 
+                                                   SET aula_id = @aulaId, sillas_vacias = @sillasVacias, origen = @origen
+                                                   WHERE clase_id = @claseId", conn);
+        cmdUpdate.Parameters.AddWithValue("@claseId", claseId);
+        cmdUpdate.Parameters.AddWithValue("@aulaId", aulaId ?? (object)DBNull.Value);
+        cmdUpdate.Parameters.AddWithValue("@sillasVacias", sillasVacias);
+        cmdUpdate.Parameters.AddWithValue("@origen", origen);
+
+        var rowsAffected = await cmdUpdate.ExecuteNonQueryAsync();
+
+        // Si no actualizó nada, insertar
+        if (rowsAffected == 0)
+        {
+            using var cmdInsert = new NpgsqlCommand(@"INSERT INTO asignacion (clase_id, aula_id, sillas_vacias, origen)
+                                                      VALUES (@claseId, @aulaId, @sillasVacias, @origen)", conn);
+            cmdInsert.Parameters.AddWithValue("@claseId", claseId);
+            cmdInsert.Parameters.AddWithValue("@aulaId", aulaId ?? (object)DBNull.Value);
+            cmdInsert.Parameters.AddWithValue("@sillasVacias", sillasVacias);
+            cmdInsert.Parameters.AddWithValue("@origen", origen);
+
+            await cmdInsert.ExecuteNonQueryAsync();
+        }
+    }
+
+    // Obtener todas las asignaciones (para detectar choques)
+    public async Task<List<Asignacion>> GetAllAsignacionesAsync()
+    {
+        var asignaciones = new List<Asignacion>();
+        using var conn = await GetConnectionAsync();
+        using var cmd = new NpgsqlCommand(@"SELECT id, clase_id, aula_id, origen, sillas_vacias 
+                                             FROM asignacion", conn);
+
+        using var reader = await cmd.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            asignaciones.Add(new Asignacion
+            {
+                Id = reader.GetInt64(0),
+                ClaseId = reader.GetInt64(1),
+                AulaId = reader.IsDBNull(2) ? null : reader.GetInt32(2),
+                Origen = reader.GetString(3),
+                SillasVacias = reader.GetInt32(4)
+            });
+        }
+        return asignaciones;
+    }
+
+    // Obtener aula por ID
+    public async Task<Aula?> GetAulaByIdAsync(int aulaId)
+    {
+        using var conn = await GetConnectionAsync();
+        using var cmd = new NpgsqlCommand(@"SELECT id, sede_id, codigo, tipo_grupo, tipo_detalle, piso, 
+                                                   capacidad_real, capacidad_total, equipamiento, activa, edificio 
+                                            FROM aula WHERE id = @aulaId", conn);
+        cmd.Parameters.AddWithValue("@aulaId", aulaId);
+
+        using var reader = await cmd.ExecuteReaderAsync();
+        if (await reader.ReadAsync())
+        {
+            return new Aula
+            {
+                Id = reader.GetInt32(0),
+                SedeId = reader.GetInt32(1),
+                Codigo = reader.GetString(2),
+                TipoGrupo = reader.GetString(3),
+                TipoDetalle = reader.IsDBNull(4) ? null : reader.GetString(4),
+                Piso = reader.GetInt32(5),
+                CapacidadReal = reader.GetInt32(6),
+                CapacidadTotal = reader.GetInt32(7),
+                Equipamiento = reader.IsDBNull(8) ? null : (string[])reader.GetValue(8),
+                Activa = reader.GetBoolean(9),
+                Edificio = reader.IsDBNull(10) ? null : reader.GetString(10)
+            };
+        }
+        return null;
+    }
+
+    // Obtener clase por ID
+    public async Task<Clase?> GetClaseByIdAsync(long claseId)
+    {
+        using var conn = await GetConnectionAsync();
+        using var cmd = new NpgsqlCommand(@"SELECT id, nro_clase, periodo_id, sede_id, materia_codigo, 
+                                                   turno, horario_desde, horario_hasta, dias, regimen, 
+                                                   idioma, modalidad, inscriptos, inscriptos_con_reserva, packs
+                                            FROM clase WHERE id = @claseId", conn);
+        cmd.Parameters.AddWithValue("@claseId", claseId);
+
+        using var reader = await cmd.ExecuteReaderAsync();
+        if (await reader.ReadAsync())
+        {
+            return new Clase
+            {
+                Id = reader.GetInt64(0),
+                NroClase = reader.GetInt32(1),
+                PeriodoId = reader.GetInt32(2),
+                SedeId = reader.GetInt32(3),
+                MateriaCodigo = reader.GetString(4),
+                Turno = reader.GetString(5),
+                HorarioDesde = reader.GetFieldValue<TimeOnly>(6),
+                HorarioHasta = reader.GetFieldValue<TimeOnly>(7),
+                Dias = reader.IsDBNull(8) ? null : (string[])reader.GetValue(8),
+                Regimen = reader.IsDBNull(9) ? null : reader.GetString(9),
+                Idioma = reader.IsDBNull(10) ? null : reader.GetString(10),
+                Modalidad = reader.IsDBNull(11) ? null : reader.GetString(11),
+                Inscriptos = reader.GetInt32(12),
+                InscriptosConReserva = reader.GetInt32(13),
+                Packs = reader.IsDBNull(14) ? null : (string[])reader.GetValue(14)
+            };
+        }
+        return null;
+    }
+
+    // Obtener demanda snapshot por materia
+    public async Task<Dictionary<string, int>> GetDemandaSnapshotAsync()
+    {
+        var demanda = new Dictionary<string, int>();
+        using var conn = await GetConnectionAsync();
+        using var cmd = new NpgsqlCommand(@"SELECT materia_codigo, solicitudes 
+                                             FROM demanda_snapshot", conn);
+
+        using var reader = await cmd.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            demanda[reader.GetString(0)] = reader.GetInt32(1);
+        }
+        return demanda;
+    }
+
+    // Upsert demanda snapshot
+    public async Task UpsertDemandaSnapshotAsync(string materiaCodigo, int solicitudes)
+    {
+        using var conn = await GetConnectionAsync();
+
+                                             VALUES (@codigo, @solicitudes)
+                                             ON CONFLICT (materia_codigo) DO UPDATE SET solicitudes = @solicitudes", conn);
+        cmd.Parameters.AddWithValue("@codigo", materiaCodigo);
+        cmd.Parameters.AddWithValue("@solicitudes", solicitudes);
+
+        await cmd.ExecuteNonQueryAsync();
+    }
+
+    // Obtener próximo nro_clase
+    public async Task<int> GetNextNroClaseAsync()
+    {
+        using var conn = await GetConnectionAsync();
+        using var cmd = new NpgsqlCommand(@"SELECT COALESCE(MAX(nro_clase), 0) + 1 FROM clase", conn);
+
+        var result = await cmd.ExecuteScalarAsync();
+        return result != null ? (int)(long)result : 1;
+    }
+
+    // Crear nueva clase
+    public async Task<long> CreateClaseAsync(
+        int nroClase, int periodoId, int sedeId, string materiaCodigo,
+        string turno, TimeOnly horarioDesde, TimeOnly horarioHasta,
+        string[] dias, int inscriptos)
+    {
+        using var conn = await GetConnectionAsync();
+        using var cmd = new NpgsqlCommand(@"INSERT INTO clase 
+                                             (nro_clase, periodo_id, sede_id, materia_codigo, turno, 
+                                              horario_desde, horario_hasta, dias, inscriptos, inscriptos_con_reserva)
+                                             VALUES (@nro, @periodo, @sede, @materia, @turno, 
+                                                     @desde, @hasta, @dias, @inscriptos, @inscriptos)
+                                             RETURNING id", conn);
+        cmd.Parameters.AddWithValue("@nro", nroClase);
+        cmd.Parameters.AddWithValue("@periodo", periodoId);
+        cmd.Parameters.AddWithValue("@sede", sedeId);
+        cmd.Parameters.AddWithValue("@materia", materiaCodigo);
+        cmd.Parameters.AddWithValue("@turno", turno);
+        cmd.Parameters.AddWithValue("@desde", horarioDesde);
+        cmd.Parameters.AddWithValue("@hasta", horarioHasta);
+        cmd.Parameters.AddWithValue("@dias", dias);
+        cmd.Parameters.AddWithValue("@inscriptos", inscriptos);
+
+        var result = await cmd.ExecuteScalarAsync();
+        return result != null ? (long)result : 0;
+    }
+}
