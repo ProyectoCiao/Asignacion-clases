@@ -23,6 +23,8 @@ builder.Services.AddScoped<ExcelCrudoService>();
 builder.Services.AddScoped<DemandaExcelRepository>();
 builder.Services.AddScoped<DemandaExcelService>();
 builder.Services.AddScoped<TablasMaestrasRepository>();
+builder.Services.AddScoped<AsignacionAulaRepository>();
+builder.Services.AddScoped<ClasesExcelService>();
 
 // Add CORS
 var allowedOrigins = builder.Configuration["Cors:AllowedOrigins"] ?? "http://localhost:4200";
@@ -82,6 +84,7 @@ app.UseCors();
 app.MapPlanificacionInicialEndpoints();
 app.MapDemandaExcelEndpoints();
 app.MapTablasMaestrasEndpoints();
+app.MapClasesExcelEndpoints();
 
 // Health check endpoint
 app.MapGet("/health", () => new { status = "healthy" })

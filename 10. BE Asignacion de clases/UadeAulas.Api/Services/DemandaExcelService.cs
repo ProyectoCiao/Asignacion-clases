@@ -147,6 +147,17 @@ public class DemandaExcelService
             throw new ArgumentOutOfRangeException(nameof(columna), $"La columna {columna} no existe en el Excel de demanda.");
     }
 
+    /// <summary>Agrega una inscripción al Excel guardado. Falso si no hay Excel de demanda cargado.</summary>
+    public async Task<bool> AgregarFilaAsync(List<string> fila)
+    {
+        var ok = await _repository.AgregarFilaAsync(fila);
+        // El id no cambia al agregar una fila: hay que descartar la copia en memoria a mano
+        lock (CacheLock) _cache = null;
+        return ok;
+    }
+
+    public Task<DemandaExcelGuardada?> ObtenerDatosAsync() => ObtenerAsync();
+
     private async Task<DemandaExcelGuardada?> ObtenerAsync()
     {
         var idVigente = await _repository.GetIdVigenteAsync();

@@ -208,7 +208,78 @@ Probado en el navegador (front en :4200, back apagado) y el .xlsx abierto con Ex
 | MP19 | Planificación final: Sede, Turno, Facultad | desde las tablas (Turno antes era fijo Mañana/Tarde/Noche) | ✅ |
 | MP20 | Materias: Sede, Turno, Facultad, Nombre | sin cambios, sigue funcionando | ✅ |
 | MP21 | `GET /maestros/pisos?sede=1&edificio=1` / `edificio=5` / sin edificio | [1, 3] / [1…10, s, S] / todos los de la sede; coincide con la base | ✅ |
+| MP23 | `GET /maestros/anios` y desplegables de Año (modal de carga de Última planificación y modal Finalizar de Planificación final) | [{1 2026}…{4 2029}] de la tabla `anio`; los dos modales muestran una lista 2026–2029 con el año actual elegido (antes eran campos numéricos libres) | ✅ |
+| MP24 | Mapa: 8 aulas por fila a todo el ancho (Monserrat piso 3, 41 aulas) | 1920 px: 8 por fila, grilla de 24 px a 24 px, tarjeta de 222 px, sin scroll horizontal ni desbordes; aula de 80 sillas con sillas de 14 px. 1366 px: 8 por fila, tarjeta de 152 px, sillas de 8 px en el aula de 80 | ✅ |
 | MP22 | Mapa: Piso acotado por Edificio | Monserrat: Todos → 17 pisos y 1 tarjeta (piso 0); Chile 1 → pisos 1 y 3, piso 1 con 2 tarjetas; Lima 2 → piso 1 con 6; volver a Todos restaura los pisos; Belgrano → B, SUM y 9 tarjetas; sin errores en consola | ✅ |
+
+## Filtros de selección múltiple tipo AutoFilter de Excel (2026-10-16)
+
+Componente `shared/multiselect-filtro` en todos los desplegables de filtro. Vacío = sin filtro. Probado con la API nueva en :5080 y el front en :4200 contra la base real (Demanda, simulada: no hay Excel cargado).
+
+| # | Caso | Resultado | Vigente |
+|---|---|---|---|
+| MS1 | Menú: abrir sin filtro, "Seleccionar todo", contador, Aceptar, Cancelar, Escape, clic afuera, Borrar, Limpiar | al abrir todo tildado; "N de M"; Aceptar aplica y muestra "2 seleccionados" o el nombre si es uno; Cancelar/Escape/afuera descartan; Borrar y Limpiar vuelven a "Todos"; todas tildadas al aceptar = sin filtro | ✅ |
+| MS2 | Back con listas (`?sede=1&sede=3`) en `/maestros/edificios`, `tipos-aula`, `pisos`, `aulas`, `materias` y en `/planificacion-inicial` | coincide con la base: aulas sede 2+3 = 18; Monserrat pisos 1,3 tipos 8,22 edificios 1,4 = 14; Online 741 + Belgrano 287 = 1.028; Intensivo + Noche = 3.344 | ✅ |
+| MS3 | Última planificación: Sede, Turno, Facultad | Belgrano + Online → "Filas 1–200 de 1028" y solo BELGRANO y UADE ONLINE; + Noche → 105 | ✅ |
+| MS4 | Mapa: Sede, Edificio, Piso, Tipo, Turno, Día | inicial 1 tarjeta (Monserrat piso 0); Recoleta + Belgrano → pisos 1, 2, B, SUM y 6 tarjetas en piso 1; todos los pisos = 18; coincide con la base | ✅ |
+| MS5 | Aulas: Sede, Edificio, Piso, Tipo en cascada | 369 → Recoleta + Belgrano 18 → + HÍBRIDA 5; al cambiar de sede el tipo se limpia; Monserrat + Lima 1 y 2 = 130 | ✅ |
+| MS6 | Materias: Sede, Turno, Facultad, Nombre (2.457) | abre al instante; el buscador ignora acentos ("actuacion"); al elegir FAIN la lista baja a 527 y se quitan las materias elegidas que no son de esa facultad | ✅ |
+| MS7 | Docentes y Planificación final: Sede, Turno, Facultad | opciones de las tablas, sin `select` nativos en los filtros | ✅ |
+| MS8 | Demanda: valor de cada filtro | con la API simulada: FACE + FAIN en la columna 0 salen como dos entradas de la misma columna ("o") y Sede = Monserrat como otra columna ("y"); el valor queda deshabilitado hasta elegir columna | ✅ (simulado) |
+
+---
+
+## Clases desde el Excel, ediciones de aula e inscripción (2026-10-16)
+Probado con la planificación real (10.000 filas) y la muestra de demanda (811 filas) en una API de prueba (:5091). Reemplaza al "cambia el filtro y recalcula" de MS8: en Demanda ahora hay botón "Aplicar filtro".
+
+| # | Caso | Resultado | Estado |
+|---|---|---|---|
+| CL1 | `GET /clases?edificio=2&turno=MAÑANA` | 25 clases de 2do cuatr en las aulas 292–296 con aula, capacidad, demanda y sillas vacías (ej. 779954: 293, cap 48, 49 insc → −1) | ✅ |
+| CL2 | `PUT /clases/{id}/aula` sin `X-Usuario` / aula inexistente | 400 / 404; no guarda nada | ✅ |
+| CL3 | `PUT` de 779954 al aula 294 con `X-Usuario` | `modificada=true`, `modificadaPor`, sillas −9; el Excel sigue igual (`aulaExcel` 293) | ✅ |
+| CL4 | `DELETE /clases/{id}/aula` | vuelve a 293 y `modificada=false` | ✅ |
+| CL5 | `POST /demanda-excel/inscripcion` válida | 200, 812 filas; la demanda de 777571 pasa de 46 a 47 | ✅ |
+| CL6 | Inscripción repetida / clase inexistente / 2da opción de otra materia | 409 / 404 / 400 | ✅ |
+| CL7 | Demanda: filtro Días = Lunes + "Aplicar filtro" | la tabla recién aparece al tocar el botón: 158 inscripciones (= 22+44+36+46+10 de las 5 clases de lunes) | ✅ |
+
+Los datos de prueba se borraron (la fila 9100001 y `asignacion_aula` quedaron como antes).
+
+### Mapa y Aulas sobre `/clases` (front, 2026-10-16)
+| # | Caso | Resultado | Estado |
+|---|---|---|---|
+| CL8 | Mapa: Chile 2 + turno Mañana | cada aula muestra sus clases y la ocupación = mayor demanda: 292 → 40/40, 293 → 49 (faltan 1), 294 → 20, 295 → 30, 296 → 44 (faltan 4) | ✅ |
+| CL9 | Mapa: clic en la 293 → "Cambiar aula" de la clase 5418 (49 insc.) → 294 | el aviso dice "294 tiene 40 sillas… faltan 9"; al guardar la clase pasa a la 294 (11 clases, 49 ocupados) y se ve en la tarjeta | ✅ |
+| CL10 | Aulas: estado, inscriptos y diferencia | 293 "Ocupada · 29 clases, máx. 49, Faltan 1"; 294 "máx. 20, Sobran 20"; coincide con el Mapa. Antes salía mal (máx. 18) porque el tope de 5.000 clases cortaba la lista: ahora 50.000 | ✅ |
+
+| CL11 | `GET /maestros/periodos` y `GET /clases?aula=3&periodo=2do Cuatr` | 6 períodos de la tabla `periodo`; aula 3: 14 clases en 2do Cuatr y 15 en 1er Cuatr (el filtro ignora mayúsculas) | ✅ |
+| CL12 | Aulas: filtro Período = 2do Cuatr / = 1er Cuatr | 2do: 292–296 con 14–15 clases y los mismos máx. de demanda (40, 49, 20, 30, 44); 1er: "Sin inscriptos · 12 clases… máx. 0, Sobran 40" en vez de "Ocupada" | ✅ |
+| CL13 | Mapa: Chile 2 + Período = 2do Cuatr | 292–296 con 14–15 clases y la misma ocupación que Aulas | ✅ |
+
+### Validación al cambiar el aula (`PUT /clases/{id}/aula`, 2026-10-16)
+Clase 779954 (5418, miércoles 07:45–11:45, 49 inscriptos, aula 293 de 48).
+
+| # | Caso | Resultado | Estado |
+|---|---|---|---|
+| VA1 | → 292, 294, 296 (40 sillas, ocupadas ese horario) | 409 con dos conflictos: CUPO ("faltan 9") y CHOQUE_AULA (nombra la clase que la ocupa) | ✅ |
+| VA2 | → 295 (60 sillas, ocupada por 11517 el mismo horario) | 409 solo CHOQUE_AULA | ✅ |
+| VA3 | → 399 (60 sillas, libre) | 200, `modificada=true`, sobran 11 | ✅ |
+| VA4 | → S292 (1 silla) sin forzar / con `forzarCupo=true` | 409 CUPO / 200 con la advertencia CUPO | ✅ |
+| VA5 | → la misma aula en que ya está | 200 sin validar nada | ✅ |
+| VA6 | Mapa: mover a la 294 / a S292 | el error sale dentro de la fila en edición; con S292 (solo cupo) aparece "Guardar igual (sobrecupo)" y al usarlo la clase se va de la 293 | ✅ |
+
+Reglas: bloquean choque de aula (mismo ciclo y período —un anual se superpone con cualquier cuatrimestre, no con verano—, día y horario en común) y cupo (inscriptos > sillas, forzable). El choque de docente (mismo docente, período, día y horario) NO bloquea: no depende del aula, así que vuelve como advertencia. ⚠ Sin probar: una advertencia CHOQUE_DOCENTE real (no apareció en estas clases); no se comparan las fechas Desde/Hasta, solo el período.
+
+### Persona backoffice (`persona-backoffice/SKILL.md`, 2026-10-16)
+Ronda contra la API real (:5080) como `backoffice.sintetico@uade.edu.ar`, 2do Cuatr / Mañana / Chile 2 (25 clases con demanda, 4 con sobrecupo).
+
+| # | Caso | Resultado | Estado |
+|---|---|---|---|
+| PB1 | Candidatas sin filtrar por tipo | movió una clase común a un LAB de otro edificio (1 silla vacía) y otras a MICROESTADIO/AUDITORIO (aulas sin tipo cargado) → regla nueva en el skill: mismo `tipo`, no vacío | ✅ corregido |
+| PB2 | Candidatas del mismo tipo, mismo edificio primero | 3 clases de la 296 (cap 40; 44, 43 y 41 insc.) pasan a la 399 (cap 60, sin choques: lunes, miércoles y viernes) y la 5418 (49 insc., miércoles) queda "sin aula viable" (los 5 candidatos dan CHOQUE_AULA: la 399 ya tiene a otra el miércoles) | ✅ |
+| PB3 | Estado y rastro | 0 sobrecupos en lo movido; `modificadaPor` = el mail de la persona; todo revertido con `DELETE` (`asignacion_aula` vacía) | ✅ |
+
+La edición de CL9 se revirtió con `DELETE /clases/{id}/aula` (`asignacion_aula` vacía).
+⚠ Sin probar: el modo noche y el teléfono del detalle de aula; el cambio con rol Impersonate (no debería ver los botones).
 
 ---
 

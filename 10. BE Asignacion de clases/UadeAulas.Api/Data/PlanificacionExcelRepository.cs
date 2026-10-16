@@ -41,6 +41,9 @@ public class PlanificacionExcelRepository
 
         await using (var cmdDel = new NpgsqlCommand("DELETE FROM planificacion_excel", conn, tx))
             await cmdDel.ExecuteNonQueryAsync();
+        // Las ediciones de aula apuntan a los Id de la planificación anterior: con una nueva dejan de valer
+        await using (var cmdEd = new NpgsqlCommand("DELETE FROM asignacion_aula", conn, tx))
+            await cmdEd.ExecuteNonQueryAsync();
 
         await using (var cmd = new NpgsqlCommand(@"
             INSERT INTO planificacion_excel (nombre_archivo, subido_por, anio, cuatrimestre, encabezados, filas)
@@ -56,6 +59,14 @@ public class PlanificacionExcelRepository
         }
 
         await tx.CommitAsync();
+    }
+
+    /// <summary>Id de la planificación vigente (consulta liviana, para saber si sirve lo que ya está en memoria).</summary>
+    public async Task<int?> GetIdVigenteAsync()
+    {
+        await using var conn = await GetConnectionAsync();
+        await using var cmd = new NpgsqlCommand("SELECT id FROM planificacion_excel ORDER BY id DESC LIMIT 1", conn);
+        return await cmd.ExecuteScalarAsync() as int?;
     }
 
     public async Task<PlanificacionExcelGuardada?> ObtenerAsync()

@@ -18,8 +18,9 @@ public static class PlanificacionInicialEndpoints
         group.MapPost("/", Subir).WithName("SubirPlanificacionInicial").DisableAntiforgery();
     }
 
+    /// <summary>sede, turno y facultad aceptan varios valores repitiendo el parámetro (?sede=Monserrat&amp;sede=Belgrano).</summary>
     public static async Task<IResult> GetPagina(
-        ExcelCrudoService service, int? pagina, int? tamanio, string? sede, string? turno, string? facultad, string? q)
+        ExcelCrudoService service, int? pagina, int? tamanio, string[]? sede, string[]? turno, string[]? facultad, string? q)
     {
         var resultado = await service.GetPaginaAsync(
             pagina ?? 1, tamanio ?? ExcelCrudoService.MaxFilasPorPagina, sede, turno, facultad, q);

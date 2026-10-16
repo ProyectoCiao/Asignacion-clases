@@ -47,6 +47,17 @@ public class DemandaExcelRepository
         await tx.CommitAsync();
     }
 
+    /// <summary>Agrega una fila (una inscripción) al final del Excel vigente. Devuelve false si no hay ninguno cargado.</summary>
+    public async Task<bool> AgregarFilaAsync(List<string> fila)
+    {
+        await using var conn = await GetConnectionAsync();
+        await using var cmd = new NpgsqlCommand(@"
+            UPDATE demanda_excel SET filas = filas || @fila::jsonb
+            WHERE id = (SELECT MAX(id) FROM demanda_excel)", conn);
+        cmd.Parameters.AddWithValue("@fila", NpgsqlDbType.Jsonb, JsonSerializer.Serialize(new[] { fila }));
+        return await cmd.ExecuteNonQueryAsync() > 0;
+    }
+
     /// <summary>Id del Excel vigente (consulta liviana, para saber si sirve lo que ya está en memoria).</summary>
     public async Task<int?> GetIdVigenteAsync()
     {

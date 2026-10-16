@@ -117,7 +117,7 @@ public class ExcelCrudoService
     public Task<bool> HayPlanificacionAsync() => _repository.ExisteAsync();
 
     public async Task<PlanificacionInicialPaginaDto> GetPaginaAsync(
-        int pagina, int tamanio, string? sede, string? turno, string? facultad, string? q)
+        int pagina, int tamanio, string[]? sedes, string[]? turnos, string[]? facultades, string? q)
     {
         var guardada = await _repository.ObtenerAsync();
         if (guardada == null)
@@ -129,9 +129,9 @@ public class ExcelCrudoService
         var colFacultad = BuscarColumna(normalizados, ["facultad"]);
 
         IEnumerable<List<string>> filtradas = guardada.Filas;
-        filtradas = FiltrarSede(filtradas, colSede, sede);
-        filtradas = FiltrarIgual(filtradas, colTurno, turno);
-        filtradas = FiltrarIgual(filtradas, colFacultad, facultad);
+        filtradas = FiltrarSede(filtradas, colSede, sedes);
+        filtradas = FiltrarIgual(filtradas, colTurno, turnos);
+        filtradas = FiltrarIgual(filtradas, colFacultad, facultades);
         if (!string.IsNullOrWhiteSpace(q))
         {
             var buscado = Normalizar(q);
@@ -167,26 +167,30 @@ public class ExcelCrudoService
         };
     }
 
-    private static IEnumerable<List<string>> FiltrarIgual(IEnumerable<List<string>> filas, int? col, string? valor)
+    /// <summary>Deja las filas cuya celda coincide con alguno de los valores (sin importar mayúsculas ni acentos).</summary>
+    private static IEnumerable<List<string>> FiltrarIgual(IEnumerable<List<string>> filas, int? col, string[]? valores)
     {
-        // Si el Excel no tiene esa columna el filtro no aplica (no deja la tabla vacía)
-        if (col == null || string.IsNullOrWhiteSpace(valor)) return filas;
-        var buscado = Normalizar(valor);
-        return filas.Where(f => Normalizar(f[col.Value]) == buscado);
+        // Si el Excel no tiene esa columna, o no se eligió ningún valor, el filtro no aplica (no deja la tabla vacía)
+        var buscados = Buscados(valores);
+        if (col == null || buscados.Count == 0) return filas;
+        return filas.Where(f => buscados.Contains(Normalizar(f[col.Value])));
     }
+
+    private static HashSet<string> Buscados(string[]? valores) =>
+        (valores ?? []).Where(v => !string.IsNullOrWhiteSpace(v)).Select(Normalizar).ToHashSet();
 
     /// <summary>
     /// La sede viene de la tabla `sedes` ("Online") y en el Excel puede traer un prefijo ("UADE ONLINE"): se acepta la
     /// coincidencia exacta o como palabra completa, sin importar mayúsculas ni acentos.
     /// </summary>
-    private static IEnumerable<List<string>> FiltrarSede(IEnumerable<List<string>> filas, int? col, string? valor)
+    private static IEnumerable<List<string>> FiltrarSede(IEnumerable<List<string>> filas, int? col, string[]? valores)
     {
-        if (col == null || string.IsNullOrWhiteSpace(valor)) return filas;
-        var buscado = Normalizar(valor);
+        var buscados = Buscados(valores);
+        if (col == null || buscados.Count == 0) return filas;
         return filas.Where(f =>
         {
             var celda = Normalizar(f[col.Value]);
-            return celda == buscado || celda.Split(' ', StringSplitOptions.RemoveEmptyEntries).Contains(buscado);
+            return buscados.Contains(celda) || celda.Split(' ', StringSplitOptions.RemoveEmptyEntries).Any(buscados.Contains);
         });
     }
 
@@ -199,7 +203,7 @@ public class ExcelCrudoService
             .ToList();
     }
 
-    private static int? BuscarColumna(List<string> normalizados, string[] candidatos)
+    internal static int? BuscarColumna(List<string> normalizados, string[] candidatos)
     {
         foreach (var c in candidatos)
         {

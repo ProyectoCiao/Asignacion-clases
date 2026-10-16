@@ -1,68 +1,43 @@
 ---
 name: uade-oferta
-description: Consulta la oferta académica de un período en la base uade_aulas — materia, sede, turno, día, horario, régimen, idioma, modalidad, packs y el docente ya asignado a la clase. Usar cuando preguntan qué clases hay de una materia, en qué día/horario cursa una comisión, quién es el docente de una clase, o datos de un período/cuatrimestre. No asigna aulas, no cambia día, horario ni docente.
+description: Consulta la oferta académica de la planificación cargada (tabla planificacion_excel) — materia, sede, turno, días, horario, régimen, idioma, modalidad, packs y docentes de cada clase. Usar cuando preguntan qué clases hay de una materia, en qué día/horario cursa una comisión, quién es el docente de una clase, o datos del cuatrimestre cargado. No asigna aulas, no cambia día, horario ni docente.
 ---
 
 # uade-oferta
 
-Rol: leer la oferta de clases del período (día, horario, docente, régimen) tal como está definida. Día, turno, horario y docente son **INPUT** — no se cuestionan ni se optimizan acá.
+Rol: leer la oferta de clases tal como está en la planificación. Día, turno, horario y docente son **INPUT**: no se cuestionan ni se optimizan.
 
-## Tabla `clase` (datos de oferta)
+## Fuente
 
-| Columna | Nota |
+`planificacion_excel` tiene **una sola fila** (cada carga la reemplaza): `nombre_archivo`, `subido_en`, `subido_por`, `anio`, `cuatrimestre`, `encabezados jsonb`, `filas jsonb` (texto tal cual el Excel). Cada fila del Excel es una clase.
+
+No hay tablas `clase`, `docente`, `periodo` con datos de la oferta: los docentes y las clases cambian cada cuatrimestre y vienen del Excel.
+
+## Columnas del Excel (por encabezado)
+
+| Encabezado | Dato |
 |---|---|
-| id / nro_clase | identificadores |
-| periodo_id | FK periodo |
-| sede_id | FK sede |
-| materia_codigo | FK materia |
-| turno | MANANA/TARDE/NOCHE |
-| horario_desde / horario_hasta | no es grilla fija, conviven distintos horarios |
-| dias | text[], ej. {Lunes,Miercoles} |
-| regimen | SEMANAL / ALEKS / REMOTO |
-| idioma, modalidad | |
-| packs | text[] |
+| **Id** | identificador único de la clase (único en todo el archivo) |
+| Clase | número de clase; **no** es único (se repite entre sedes) |
+| Facultad, Departamento, Sede | |
+| Ciclo, Periodo | año y período (VERANO, 1er CUATR…) |
+| Desde, Hasta | fechas del período (calendario, no el día de cursada) |
+| Turno, Horario | `14:00 - 18:00`; conviven distintos horarios |
+| Dias De Cursada | `Lunes - Martes - …` |
+| CódigoMateria, Materia, CargaHorariaMateria | |
+| Modalidad, Idioma, Nivel Idioma, Régimen, Tipo, Packs Asociados | |
+| Aula Principal, Capacidad Real, Capacidad Total | aula del Excel; `-` = sin aula |
+| Docentes | texto `Apellido, Nombre` (varios separados) |
+| Inscriptos Por Clase… | **no es demanda** (ver uade-demanda) |
 
-## Docente asignado (dato, no modelo)
-
-```sql
-SELECT d.nombre
-FROM clase_docente cd
-JOIN docente d ON d.id = cd.docente_id
-WHERE cd.clase_id = :clase_id;
-```
-
-El docente que devuelve esta consulta es un dato ya definido por el motor de afinidad docente↔clase de otro equipo. Reportarlo tal cual; no proponer cambios ni alternativas.
-
-## Tabla `periodo`
-
-| Columna | Nota |
-|---|---|
-| ciclo, nombre | |
-| fecha_desde, fecha_hasta | **restricción de calendario** del cuatrimestre, no define el día de cursada semanal (eso es `clase.dias`) |
-
-## Tabla `materia`
-
-| Columna | Nota |
-|---|---|
-| codigo, nombre | |
-| facultad | FACE/FACO/FAIN/FADI/FAJU/FASA/FARU |
-| departamento, carga_horaria | |
-
-## Consulta tipo
-
-```sql
-SELECT c.nro_clase, m.nombre AS materia, s.codigo AS sede, c.turno,
-       c.dias, c.horario_desde, c.horario_hasta, c.regimen, c.packs
-FROM clase c
-JOIN materia m ON m.codigo = c.materia_codigo
-JOIN sede s ON s.id = c.sede_id
-WHERE m.codigo = :materia_codigo AND c.periodo_id = :periodo_id;
-```
+Leer por la API: `GET /planificacion-inicial?pagina&tamanio(≤200)&sede&turno&facultad&q` (filtros sin acentos, repetir el parámetro para varios valores). Los encabezados se reconocen sin importar mayúsculas ni acentos.
 
 ## Qué no hacer
 
-- No reasignar, sugerir ni predecir docente (es del motor ML de otro equipo; compatibilidad ≠ probabilidad de éxito).
+- No reasignar, sugerir ni predecir docente.
 - No cambiar día, turno ni horario "para optimizar".
-- No confundir `periodo` (fechas de calendario) con el día de cursada semanal (`clase.dias`).
+- No confundir `Desde/Hasta` (calendario del período) con el día de cursada semanal.
+- No identificar una clase por `Clase`: usar `Id`.
+- No usar los inscriptos de la planificación como demanda.
 - No asignar aula (usar **uade-cuadre**).
 - No trabajar a nivel alumno individual.
