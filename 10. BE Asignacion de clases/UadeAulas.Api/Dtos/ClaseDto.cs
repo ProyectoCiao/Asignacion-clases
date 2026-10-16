@@ -39,12 +39,31 @@ public class ClaseDto
     public int? Demanda { get; set; }
     /// <summary>Capacidad − demanda (negativo = sobrecupo). Null si falta alguno de los dos.</summary>
     public int? SillasVacias { get; set; }
+
+    /// <summary>Alumnos asignados a la clase en primera opción (ausente si todavía no se corrió "Asignar alumnos a aulas").</summary>
+    public int? Asignados1 { get; set; }
+    /// <summary>Alumnos que la marcaron como segunda opción (tentativos).</summary>
+    public int? Asignados2 { get; set; }
+}
+
+public class ResumenAsignacionAlumnosDto
+{
+    public int Filas { get; set; }
+    public int Alumnos { get; set; }
+    public int Opcion1 { get; set; }
+    public int Opcion2 { get; set; }
+    public DateTime? GeneradoEn { get; set; }
+    public string? GeneradoPor { get; set; }
+    /// <summary>Ids de clase de la demanda que no existen en la planificación (no se asignaron). Solo al generar.</summary>
+    public int? IdsInexistentes { get; set; }
 }
 
 public class ClasesPaginaDto
 {
     public bool Cargada { get; set; }
     public bool HayDemanda { get; set; }
+    /// <summary>Ya se corrió "Asignar alumnos a aulas": Asignados1/2 de cada clase son válidos.</summary>
+    public bool HayAsignaciones { get; set; }
     public int TotalFiltradas { get; set; }
     public int Pagina { get; set; }
     public int TamanioPagina { get; set; }

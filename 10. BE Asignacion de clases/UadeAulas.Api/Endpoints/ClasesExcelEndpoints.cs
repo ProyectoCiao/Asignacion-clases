@@ -20,6 +20,12 @@ public static class ClasesExcelEndpoints
         group.MapDelete("/{id}/aula", RestaurarAula).WithName("RestaurarAulaClase");
 
         app.MapPost("/demanda-excel/inscripcion", Inscribir).WithTags("DemandaExcel").WithName("InscribirAlumno");
+
+        // "Asignar alumnos a aulas" (Mapa): distribuye la demanda entre las clases/aulas y guarda el resultado
+        var alumnos = app.MapGroup("/asignacion-alumnos").WithTags("AsignacionAlumnos");
+        alumnos.MapGet("/", async (ClasesExcelService service) => Results.Ok(await service.GetResumenAsignacionAlumnosAsync()))
+            .WithName("GetAsignacionAlumnos");
+        alumnos.MapPost("/generar", GenerarAsignacionAlumnos).WithName("GenerarAsignacionAlumnos");
     }
 
     /// <summary>sede, turno, periodo ("1er Cuatr", "2do Cuatr"...), edificio, piso y aula aceptan varios valores repitiendo el parámetro.</summary>
@@ -49,6 +55,13 @@ public static class ClasesExcelEndpoints
 
     public static Task<IResult> RestaurarAula(string id, ClasesExcelService service) =>
         Ejecutar(async () => Results.Ok(await service.RestaurarAulaAsync(id)));
+
+    public static Task<IResult> GenerarAsignacionAlumnos(HttpRequest request, ClasesExcelService service)
+    {
+        var usuario = UsuarioActual.Leer(request);
+        if (usuario == null) return Task.FromResult(UsuarioActual.FaltaUsuario());
+        return Ejecutar(async () => Results.Ok(await service.GenerarAsignacionAlumnosAsync(usuario)));
+    }
 
     public static Task<IResult> Inscribir(InscripcionRequest body, ClasesExcelService service) =>
         Ejecutar(async () => Results.Ok(new { exito = true, totalFilas = await service.InscribirAsync(body) }));

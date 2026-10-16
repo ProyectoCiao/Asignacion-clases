@@ -269,6 +269,19 @@ Clase 779954 (5418, miércoles 07:45–11:45, 49 inscriptos, aula 293 de 48).
 
 Reglas: bloquean choque de aula (mismo ciclo y período —un anual se superpone con cualquier cuatrimestre, no con verano—, día y horario en común) y cupo (inscriptos > sillas, forzable). El choque de docente (mismo docente, período, día y horario) NO bloquea: no depende del aula, así que vuelve como advertencia. ⚠ Sin probar: una advertencia CHOQUE_DOCENTE real (no apareció en estas clases); no se comparan las fechas Desde/Hasta, solo el período.
 
+### Asignar alumnos a aulas (Mapa, 2026-10-16)
+Muestra de demanda (811 inscripciones, 435 alumnos, con 2da opción) y planificación real.
+
+| # | Caso | Resultado | Estado |
+|---|---|---|---|
+| AA1 | `POST /asignacion-alumnos/generar` sin `X-Usuario` / con él | 400 / 200 `{filas:1425, alumnos:435, opcion1:811, opcion2:614, idsInexistentes:0}` | ✅ |
+| AA2 | Correrlo dos veces | reemplaza (mismas 1425 filas, cambia `generadoPor`), no duplica | ✅ |
+| AA3 | `GET /clases` después | `hayAsignaciones=true` y cada clase trae `asignados1/2` (ej. 4242: 38 en 1ª, 0 en 2ª) | ✅ |
+| AA4 | Mapa (Chile 2, 2do Cuatr, Mañana) antes de asignar | sillas todas libres (228) y el texto "Todavía no se asignaron alumnos…" | ✅ |
+| AA5 | Mapa: botón "Asignar alumnos a aulas" | mensaje "435 alumnos distribuidos (811 en 1ª y 614 en 2ª)"; 174 sillas rojas, 24 tramadas y 30 libres; tarjetas "46 en 1ª · 18 en 2ª · faltan 16", "18 en 1ª · 46 en 2ª · faltan 24" (aula de 40 con muchos tentativos), "30 en 1ª · 0 en 2ª · 30 libres" | ✅ |
+
+La tarjeta muestra la clase del aula con más alumnos (1ª + 2ª). ⚠ Sin probar: modo noche del color tramado, el confirm al reemplazar una asignación previa (en la prueba se aceptó solo), el rol Impersonate (no ve el botón). La tabla `asignacion_alumno` quedó con la corrida de esta prueba.
+
 ### Persona backoffice (`persona-backoffice/SKILL.md`, 2026-10-16)
 Ronda contra la API real (:5080) como `backoffice.sintetico@uade.edu.ar`, 2do Cuatr / Mañana / Chile 2 (25 clases con demanda, 4 con sobrecupo).
 

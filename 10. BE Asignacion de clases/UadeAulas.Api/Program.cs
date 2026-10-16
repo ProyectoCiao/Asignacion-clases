@@ -24,6 +24,7 @@ builder.Services.AddScoped<DemandaExcelRepository>();
 builder.Services.AddScoped<DemandaExcelService>();
 builder.Services.AddScoped<TablasMaestrasRepository>();
 builder.Services.AddScoped<AsignacionAulaRepository>();
+builder.Services.AddScoped<AsignacionAlumnoRepository>();
 builder.Services.AddScoped<ClasesExcelService>();
 
 // Add CORS

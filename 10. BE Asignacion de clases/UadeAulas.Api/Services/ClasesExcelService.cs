@@ -29,15 +29,75 @@ public class ClasesExcelService
     private readonly AsignacionAulaRepository _asignaciones;
     private readonly TablasMaestrasRepository _maestras;
     private readonly DemandaExcelService _demanda;
+    private readonly AsignacionAlumnoRepository _alumnos;
 
     public ClasesExcelService(
         PlanificacionExcelRepository planificacion, AsignacionAulaRepository asignaciones,
-        TablasMaestrasRepository maestras, DemandaExcelService demanda)
+        TablasMaestrasRepository maestras, DemandaExcelService demanda, AsignacionAlumnoRepository alumnos)
     {
         _planificacion = planificacion;
         _asignaciones = asignaciones;
         _maestras = maestras;
         _demanda = demanda;
+        _alumnos = alumnos;
+    }
+
+    public async Task<ResumenAsignacionAlumnosDto> GetResumenAsignacionAlumnosAsync() => ADto(await _alumnos.GetResumenAsync());
+
+    private static ResumenAsignacionAlumnosDto ADto(ResumenAsignacionAlumnos r) => new()
+    {
+        Filas = r.Filas, Alumnos = r.Alumnos, Opcion1 = r.Opcion1, Opcion2 = r.Opcion2, GeneradoEn = r.GeneradoEn, GeneradoPor = r.GeneradoPor,
+    };
+
+    /// <summary>
+    /// "Asignar alumnos a aulas": distribuye a los alumnos del Excel de demanda entre las clases —y por lo tanto entre sus
+    /// aulas— según lo que eligieron: la clase de "Id Clase" queda como primera opción (silla ocupada) y la de
+    /// "Id Clase 2da Opcion" como segunda (tentativa). Reemplaza la asignación anterior. No mueve clases de aula ni cambia
+    /// el Excel de demanda; el cupo no recorta nada: un aula con más alumnos que sillas queda a la vista para reordenarla.
+    /// </summary>
+    public async Task<ResumenAsignacionAlumnosDto> GenerarAsignacionAlumnosAsync(string usuario)
+    {
+        var bases = await ObtenerBasesAsync() ?? throw new ReglaNegocioException("Todavía no se subió la planificación.", 404);
+        var demanda = await _demanda.ObtenerDatosAsync()
+            ?? throw new ReglaNegocioException("Todavía no se subió el Excel de demanda.", 404);
+
+        var n = demanda.Encabezados.Select(ExcelCrudoService.Normalizar).ToList();
+        var colLegajo = n.FindIndex(h => h.Contains("legajo"));
+        var colAlumno = n.FindIndex(h => h is "alumno" or "nombre");
+        var colId1 = n.FindIndex(h => h == "id clase");
+        var colId2 = n.FindIndex(h => h.Contains("id clase") && h.Contains("2da"));
+        if (colLegajo < 0) throw new ReglaNegocioException("El Excel de demanda no tiene la columna \"Legajo\".");
+        if (colId1 < 0) throw new ReglaNegocioException("El Excel de demanda no tiene la columna \"Id Clase\".");
+
+        var existentes = bases.Select(b => b.Id).ToHashSet();
+        var filas = new Dictionary<(string, string, short), AsignacionAlumnoFila>();
+        var inexistentes = 0;
+        string Celda(List<string> f, int c) => c >= 0 && c < f.Count ? f[c].Trim() : string.Empty;
+
+        foreach (var fila in demanda.Filas)
+        {
+            var legajo = Celda(fila, colLegajo);
+            if (legajo.Length == 0) continue;
+            var alumno = Celda(fila, colAlumno);
+            var id1 = Celda(fila, colId1);
+            var id2 = Celda(fila, colId2);
+
+            if (id1.Length > 0)
+            {
+                if (existentes.Contains(id1)) filas[(legajo, id1, 1)] = new AsignacionAlumnoFila(legajo, alumno, id1, 1);
+                else inexistentes++;
+            }
+            if (id2.Length > 0 && id2 != id1)
+            {
+                if (existentes.Contains(id2)) filas[(legajo, id2, 2)] = new AsignacionAlumnoFila(legajo, alumno, id2, 2);
+                else inexistentes++;
+            }
+        }
+
+        await _alumnos.ReemplazarAsync(filas.Values, usuario);
+        var resumen = ADto(await _alumnos.GetResumenAsync());
+        resumen.IdsInexistentes = inexistentes;
+        return resumen;
     }
 
     public async Task<ClasesPaginaDto> GetPaginaAsync(
@@ -82,6 +142,7 @@ public class ClasesExcelService
         {
             Cargada = true,
             HayDemanda = todas.HayDemanda,
+            HayAsignaciones = todas.HayAsignaciones,
             TotalFiltradas = lista.Count,
             Pagina = pagina,
             TamanioPagina = tamanio,
@@ -303,7 +364,7 @@ public class ClasesExcelService
 
     // ---- armado ----
 
-    private record ClasesArmadas(List<ClaseDto> Clases, bool HayDemanda);
+    private record ClasesArmadas(List<ClaseDto> Clases, bool HayDemanda, bool HayAsignaciones);
 
     private async Task<ClasesArmadas> ArmarAsync(List<ClaseBase> bases)
     {
@@ -314,6 +375,8 @@ public class ClasesExcelService
         var porId = aulas.ToDictionary(a => a.Id);
         var ediciones = await _asignaciones.GetTodasAsync();
         var demanda = await ContarDemandaPorClaseAsync();
+        var asignados = await _alumnos.GetConteosAsync();
+        var hayAsignaciones = asignados.Count > 0;
 
         var clases = new List<ClaseDto>(bases.Count);
         foreach (var b in bases)
@@ -346,10 +409,12 @@ public class ClasesExcelService
                 ModificadaPor = modificada ? edicion?.ModificadoPor : null,
                 ModificadaEn = modificada ? edicion?.ModificadoEn : null,
                 Demanda = dem,
+                Asignados1 = hayAsignaciones ? asignados.GetValueOrDefault(b.Id).Primera : null,
+                Asignados2 = hayAsignaciones ? asignados.GetValueOrDefault(b.Id).Segunda : null,
                 SillasVacias = dem != null && aula?.Capacidad != null ? aula.Capacidad - dem : null,
             });
         }
-        return new ClasesArmadas(clases, demanda != null);
+        return new ClasesArmadas(clases, demanda != null, hayAsignaciones);
     }
 
     /// <summary>Inscripciones en primera opción por Id de clase, según el Excel de demanda; null si no hay o no trae "Id Clase".</summary>

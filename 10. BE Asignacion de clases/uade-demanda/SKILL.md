@@ -21,6 +21,10 @@ Las columnas de inscriptos de la planificación (`Inscriptos Por Clase…` en `p
 - Alumnos = legajos distintos (columna cuyo encabezado contiene "legajo").
 - Se consulta por la API: `POST /demanda-excel/totales` {filtros, agruparPor, ordenarPor, pagina, tamanio} y `POST /demanda-excel/valores` {columna, filtros}. Filtros por índice de columna, sin acentos; columnas distintas = Y, misma columna = O. Sin filtros devuelve 400.
 
+## Alumnos distribuidos (`asignacion_alumno`)
+
+El botón "Asignar alumnos a aulas" del Mapa copia la demanda a `asignacion_alumno` (legajo, `clase_id`, `opcion`): opción 1 = clase de "Id Clase", opción 2 = clase de "Id Clase 2da Opcion". `GET /clases` devuelve `asignados1/asignados2` por clase y `GET /asignacion-alumnos` el resumen. La segunda opción es **tentativa**: no es una inscripción firme, ocupa silla "en rojo tramado". Si se pide la demanda de una clase, informar las dos cifras por separado.
+
 ## Cómo asociar demanda a una clase
 
 El archivo de alumnos no trae el `Id` de la clase: hay que filtrar por los datos de la clase (código de materia, sede, días y horario, y docente si hace falta) tomados de la planificación. **El criterio exacto de cruce está pendiente de definir con el usuario**: no inventarlo; si hay ambigüedad (más de una clase que encaja), decirlo.
