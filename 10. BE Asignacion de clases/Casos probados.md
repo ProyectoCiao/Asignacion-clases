@@ -283,6 +283,7 @@ Ronda contra la API real (:5080) como `backoffice.sintetico@uade.edu.ar`, 2do Cu
 |---|---|---|---|
 | MA1 | Cambiar Edificio (Chile 2) y Turno (Tarde) sin tocar el botón | no se hace ningún pedido a `/clases`; el mapa sigue siendo el anterior y aparece el aviso "Cambiaste los filtros…"; el Piso se acota solo a "Piso 2" | ✅ |
 | MA2 | Tocar "Aplicar filtro" | 1 pedido a `/clases`, el aviso desaparece y se ven 292–296 con 8–10 clases de la tarde | ✅ |
+| DM1 | Demanda: filtro Turno = MAÑANA (único valor de la columna) + Totalizar por Clase | antes el botón "Aplicar filtro" seguía gris (elegir todos los valores se tomaba como "sin filtro"); ahora se habilita y muestra 811 inscripciones de 435 alumnos, 25 valores de "Clase" | ✅ |
 | AP1 | Aulas: cambiar Edificio (Chile 2) y Período (2do Cuatr) sin tocar el botón | la tabla sigue con las 374 filas, aparece el aviso y el botón se habilita (de entrada está deshabilitado) | ✅ |
 | AP2 | Aulas: "Aplicar filtro" | 8 filas (Chile 2), 292–296 con 14–15 clases y los mismos máx. de demanda que el Mapa; el aviso desaparece y el botón vuelve a deshabilitarse | ✅ |
 Antes (CL8–CL13) los filtros del Mapa aplicaban al elegir cada valor; ahora solo con el botón (igual que Demanda). Carga inicial y "Cambiar aula" siguen consultando solos.
