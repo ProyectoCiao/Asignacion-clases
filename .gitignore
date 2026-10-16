@@ -1,0 +1,6 @@
+# Datos de origen pesados (inscripciones reales de alumnos, reportes completos): GitHub rechaza archivos de más de
+# 100 MB y además son datos personales. Se quedan solo en la máquina.
+10. BE Asignacion de clases/Archivos excel completos/
+
+# Carpeta basura que genera un `dotnet build -o --nologo` mal escrito
+10. BE Asignacion de clases/UadeAulas.Api/--nologo/

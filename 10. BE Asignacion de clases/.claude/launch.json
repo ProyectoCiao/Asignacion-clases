@@ -4,12 +4,13 @@
     {
       "name": "backend",
       "runtimeExecutable": "dotnet",
-      "runtimeArgs": ["run", "--project", "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\UadeAulas.Api.csproj", "--launch-profile", "http"],
+      "runtimeArgs": ["run", "--project", "UadeAulas.Api/UadeAulas.Api.csproj", "--launch-profile", "http"],
       "port": 5080
     },
     {
       "name": "frontend",
-      "url": "http://localhost:4200",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "../uade-aulas-web", "start"],
       "port": 4200
     }
   ]

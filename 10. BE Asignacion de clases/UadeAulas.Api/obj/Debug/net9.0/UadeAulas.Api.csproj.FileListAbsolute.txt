@@ -43,3 +43,102 @@ C:\Emi\10. BE Asignacion de clases\UadeAulas.Api\bin\Debug\net9.0\ExcelNumberFor
 C:\Emi\10. BE Asignacion de clases\UadeAulas.Api\bin\Debug\net9.0\RBush.dll
 C:\Emi\10. BE Asignacion de clases\UadeAulas.Api\bin\Debug\net9.0\SixLabors.Fonts.dll
 C:\Emi\10. BE Asignacion de clases\UadeAulas.Api\bin\Debug\net9.0\System.IO.Packaging.dll
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\bin\Debug\net9.0\appsettings.Development.json
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\bin\Debug\net9.0\appsettings.json
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\bin\Debug\net9.0\UadeAulas.Api.staticwebassets.endpoints.json
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\bin\Debug\net9.0\UadeAulas.Api.exe
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\bin\Debug\net9.0\UadeAulas.Api.deps.json
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\bin\Debug\net9.0\UadeAulas.Api.runtimeconfig.json
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\bin\Debug\net9.0\UadeAulas.Api.dll
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\bin\Debug\net9.0\UadeAulas.Api.pdb
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\bin\Debug\net9.0\ClosedXML.dll
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\bin\Debug\net9.0\ClosedXML.Parser.dll
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\bin\Debug\net9.0\DocumentFormat.OpenXml.dll
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\bin\Debug\net9.0\DocumentFormat.OpenXml.Framework.dll
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\bin\Debug\net9.0\ExcelNumberFormat.dll
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\bin\Debug\net9.0\Microsoft.AspNetCore.OpenApi.dll
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\bin\Debug\net9.0\Microsoft.OpenApi.dll
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\bin\Debug\net9.0\Npgsql.dll
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\bin\Debug\net9.0\RBush.dll
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\bin\Debug\net9.0\SixLabors.Fonts.dll
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\bin\Debug\net9.0\Swashbuckle.AspNetCore.Swagger.dll
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\bin\Debug\net9.0\Swashbuckle.AspNetCore.SwaggerGen.dll
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\bin\Debug\net9.0\Swashbuckle.AspNetCore.SwaggerUI.dll
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\bin\Debug\net9.0\System.IO.Packaging.dll
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\obj\Debug\net9.0\UadeAulas.Api.csproj.AssemblyReference.cache
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\obj\Debug\net9.0\rpswa.dswa.cache.json
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\obj\Debug\net9.0\UadeAulas.Api.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\obj\Debug\net9.0\UadeAulas.Api.AssemblyInfoInputs.cache
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\obj\Debug\net9.0\UadeAulas.Api.AssemblyInfo.cs
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\obj\Debug\net9.0\UadeAulas.Api.csproj.CoreCompileInputs.cache
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\obj\Debug\net9.0\UadeAulas.Api.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\obj\Debug\net9.0\UadeAulas.Api.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\obj\Debug\net9.0\UadeAulas.Api.sourcelink.json
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\obj\Debug\net9.0\rjimswa.dswa.cache.json
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\obj\Debug\net9.0\rjsmrazor.dswa.cache.json
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\obj\Debug\net9.0\rjsmcshtml.dswa.cache.json
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\obj\Debug\net9.0\scopedcss\bundle\UadeAulas.Api.styles.css
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\obj\Debug\net9.0\staticwebassets.build.json
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\obj\Debug\net9.0\staticwebassets.build.json.cache
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\obj\Debug\net9.0\staticwebassets.development.json
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\obj\Debug\net9.0\staticwebassets.build.endpoints.json
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\obj\Debug\net9.0\swae.build.ex.cache
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\obj\Debug\net9.0\UadeAula.E503E0B2.Up2Date
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\obj\Debug\net9.0\UadeAulas.Api.dll
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\obj\Debug\net9.0\refint\UadeAulas.Api.dll
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\obj\Debug\net9.0\UadeAulas.Api.pdb
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\obj\Debug\net9.0\UadeAulas.Api.genruntimeconfig.cache
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\obj\Debug\net9.0\ref\UadeAulas.Api.dll
+C:\Users\emurbaneja\AppData\Local\Temp\uadeaulas_build\appsettings.Development.json
+C:\Users\emurbaneja\AppData\Local\Temp\uadeaulas_build\appsettings.json
+C:\Users\emurbaneja\AppData\Local\Temp\uadeaulas_build\UadeAulas.Api.staticwebassets.endpoints.json
+C:\Users\emurbaneja\AppData\Local\Temp\uadeaulas_build\UadeAulas.Api.exe
+C:\Users\emurbaneja\AppData\Local\Temp\uadeaulas_build\UadeAulas.Api.deps.json
+C:\Users\emurbaneja\AppData\Local\Temp\uadeaulas_build\UadeAulas.Api.runtimeconfig.json
+C:\Users\emurbaneja\AppData\Local\Temp\uadeaulas_build\UadeAulas.Api.dll
+C:\Users\emurbaneja\AppData\Local\Temp\uadeaulas_build\UadeAulas.Api.pdb
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\--nologo\appsettings.Development.json
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\--nologo\appsettings.json
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\--nologo\UadeAulas.Api.staticwebassets.endpoints.json
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\--nologo\UadeAulas.Api.exe
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\--nologo\UadeAulas.Api.deps.json
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\--nologo\UadeAulas.Api.runtimeconfig.json
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\--nologo\UadeAulas.Api.dll
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\--nologo\UadeAulas.Api.pdb
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\--nologo\ClosedXML.dll
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\--nologo\ClosedXML.Parser.dll
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\--nologo\DocumentFormat.OpenXml.dll
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\--nologo\DocumentFormat.OpenXml.Framework.dll
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\--nologo\ExcelNumberFormat.dll
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\--nologo\Microsoft.AspNetCore.OpenApi.dll
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\--nologo\Microsoft.OpenApi.dll
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\--nologo\Npgsql.dll
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\--nologo\RBush.dll
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\--nologo\SixLabors.Fonts.dll
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\--nologo\Swashbuckle.AspNetCore.Swagger.dll
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\--nologo\Swashbuckle.AspNetCore.SwaggerGen.dll
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\--nologo\Swashbuckle.AspNetCore.SwaggerUI.dll
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\--nologo\System.IO.Packaging.dll
+C:\Users\emurbaneja\AppData\Local\Temp\uadeaulas_build\--nologo\appsettings.Development.json
+C:\Users\emurbaneja\AppData\Local\Temp\uadeaulas_build\--nologo\appsettings.json
+C:\Users\emurbaneja\AppData\Local\Temp\uadeaulas_build\--nologo\UadeAulas.Api.deps.json
+C:\Users\emurbaneja\AppData\Local\Temp\uadeaulas_build\--nologo\UadeAulas.Api.runtimeconfig.json
+C:\Users\emurbaneja\AppData\Local\Temp\uadeaulas_build\--nologo\UadeAulas.Api.staticwebassets.endpoints.json
+C:\Users\emurbaneja\AppData\Local\Temp\build_api_aulas\--nologo\appsettings.Development.json
+C:\Users\emurbaneja\AppData\Local\Temp\build_api_aulas\--nologo\appsettings.json
+C:\Users\emurbaneja\AppData\Local\Temp\build_api_aulas\--nologo\UadeAulas.Api.deps.json
+C:\Users\emurbaneja\AppData\Local\Temp\build_api_aulas\--nologo\UadeAulas.Api.runtimeconfig.json
+C:\Users\emurbaneja\AppData\Local\Temp\build_api_aulas\--nologo\UadeAulas.Api.staticwebassets.endpoints.json
+C:\Users\emurbaneja\AppData\Local\Temp\build_api_aulas\appsettings.Development.json
+C:\Users\emurbaneja\AppData\Local\Temp\build_api_aulas\appsettings.json
+C:\Users\emurbaneja\AppData\Local\Temp\build_api_aulas\UadeAulas.Api.staticwebassets.endpoints.json
+C:\Users\emurbaneja\AppData\Local\Temp\build_api_aulas\UadeAulas.Api.exe
+C:\Users\emurbaneja\AppData\Local\Temp\build_api_aulas\UadeAulas.Api.deps.json
+C:\Users\emurbaneja\AppData\Local\Temp\build_api_aulas\UadeAulas.Api.runtimeconfig.json
+C:\Users\emurbaneja\AppData\Local\Temp\build_api_aulas\UadeAulas.Api.dll
+C:\Users\emurbaneja\AppData\Local\Temp\build_api_aulas\UadeAulas.Api.pdb
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\bin\Debug\net9.0\--nologo\appsettings.Development.json
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\bin\Debug\net9.0\--nologo\appsettings.json
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\bin\Debug\net9.0\--nologo\UadeAulas.Api.deps.json
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\bin\Debug\net9.0\--nologo\UadeAulas.Api.runtimeconfig.json
+C:\Users\emurbaneja\OneDrive - Fundación UADE\Documentos\GitHub\Asignacion-clases\10. BE Asignacion de clases\UadeAulas.Api\bin\Debug\net9.0\--nologo\UadeAulas.Api.staticwebassets.endpoints.json

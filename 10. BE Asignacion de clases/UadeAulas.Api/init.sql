@@ -29,7 +29,19 @@ CREATE TABLE IF NOT EXISTS periodo (
 	ciclo VARCHAR(50) NOT NULL,
 	nombre VARCHAR(255) NOT NULL,
 	fecha_desde DATE NOT NULL,
-	fecha_hasta DATE NOT NULL
+	fecha_hasta DATE NOT NULL,
+	-- Ciclo de vida de la planificación (el estado se calcula, ver scripts/migracion_2026-10-06_reapertura.sql)
+	fecha_congelamiento TIMESTAMPTZ,
+	fecha_fin_inscripcion TIMESTAMPTZ,
+	reabierta_en TIMESTAMPTZ,
+	reabierta_por VARCHAR(255),
+	reabierta_motivo TEXT,
+	origen VARCHAR(20) NOT NULL DEFAULT 'EXCEL' CONSTRAINT ck_periodo_origen CHECK (origen IN ('EXCEL', 'COPIA')),
+	periodo_origen_id INT REFERENCES periodo(id),
+	CONSTRAINT ck_periodo_fechas_inscripcion CHECK (fecha_congelamiento IS NULL OR fecha_fin_inscripcion IS NULL
+		OR fecha_fin_inscripcion > fecha_congelamiento),
+	CONSTRAINT ck_periodo_reapertura CHECK (reabierta_en IS NULL
+		OR (fecha_fin_inscripcion IS NOT NULL AND reabierta_por IS NOT NULL AND reabierta_motivo IS NOT NULL))
 );
 
 -- Tabla: aula
@@ -92,16 +104,17 @@ CREATE TABLE IF NOT EXISTS demanda_snapshot (
 );
 
 -- Tablas opcionales (no usadas en MVP pero mencionadas en el esquema)
-CREATE TABLE IF NOT EXISTS carrera (
-	id SERIAL PRIMARY KEY,
-	codigo VARCHAR(50) NOT NULL UNIQUE,
-	nombre VARCHAR(255) NOT NULL
+-- Maestro de carreras (cargado desde el Excel; reemplaza a la vieja tabla carrera, 2026-10-08)
+CREATE TABLE IF NOT EXISTS carreras (
+	codigo_carrera VARCHAR(20) PRIMARY KEY,
+	nombre_carrera VARCHAR(150) NOT NULL,
+	facultad VARCHAR(100)
 );
 
 CREATE TABLE IF NOT EXISTS materia_carrera (
 	materia_codigo VARCHAR(50) NOT NULL REFERENCES materia(codigo),
-	carrera_id INT NOT NULL REFERENCES carrera(id),
-	PRIMARY KEY (materia_codigo, carrera_id)
+	codigo_carrera VARCHAR(20) NOT NULL REFERENCES carreras(codigo_carrera),
+	PRIMARY KEY (materia_codigo, codigo_carrera)
 );
 
 CREATE TABLE IF NOT EXISTS alumno (
@@ -132,7 +145,27 @@ CREATE TABLE IF NOT EXISTS oferta_meta (
 	PRIMARY KEY (materia_codigo, periodo_id)
 );
 
+-- Tabla: auditoria_cambios (log de cambios del backoffice, se graba desde la API)
+CREATE TABLE IF NOT EXISTS auditoria_cambios (
+	id BIGSERIAL PRIMARY KEY,
+	fecha_hora TIMESTAMPTZ NOT NULL DEFAULT now(),
+	usuario VARCHAR(255) NOT NULL,
+	periodo_id INT REFERENCES periodo(id),
+	entidad VARCHAR(50) NOT NULL,
+	entidad_id BIGINT,
+	accion VARCHAR(20) NOT NULL CHECK (accion IN ('ALTA', 'MODIFICACION', 'BAJA')),
+	es_emergencia BOOLEAN NOT NULL DEFAULT false,
+	motivo TEXT,
+	antes JSONB,
+	despues JSONB,
+	lote UUID,   -- agrupa los cambios aplicados juntos (ej. un intercambio de aulas)
+	CHECK (NOT es_emergencia OR motivo IS NOT NULL)
+);
+CREATE INDEX IF NOT EXISTS idx_auditoria_lote ON auditoria_cambios(lote);
+
 -- Índices para performance
+CREATE INDEX IF NOT EXISTS idx_auditoria_periodo ON auditoria_cambios(periodo_id, fecha_hora DESC);
+CREATE INDEX IF NOT EXISTS idx_auditoria_entidad ON auditoria_cambios(entidad, entidad_id);
 CREATE INDEX IF NOT EXISTS idx_clase_periodo ON clase(periodo_id);
 CREATE INDEX IF NOT EXISTS idx_clase_sede ON clase(sede_id);
 CREATE INDEX IF NOT EXISTS idx_clase_materia ON clase(materia_codigo);
@@ -169,3 +202,26 @@ INSERT INTO docente (nombre) VALUES
 ON CONFLICT DO NOTHING;
 
 -- Aulas: se cargan desde uade_aulas.xlsx con scripts/importar_aulas.py
+
+-- 2026-10-08: el modelo de arriba (salvo carreras) se borró de la base a la espera de las tablas nuevas.
+-- Ver scripts/migracion_2026-10-08_planificacion_excel.sql.
+CREATE TABLE IF NOT EXISTS planificacion_excel (
+	id SERIAL PRIMARY KEY,
+	nombre_archivo VARCHAR(255) NOT NULL,
+	subido_en TIMESTAMPTZ NOT NULL DEFAULT now(),
+	subido_por VARCHAR(255) NOT NULL,
+	encabezados JSONB NOT NULL,
+	filas JSONB NOT NULL,
+	anio INT,
+	cuatrimestre INT CHECK (cuatrimestre IN (1, 2))
+);
+
+-- Demanda provisoria (2026-10-08): ver scripts/migracion_2026-10-08_demanda_excel.sql.
+CREATE TABLE IF NOT EXISTS demanda_excel (
+	id SERIAL PRIMARY KEY,
+	nombre_archivo VARCHAR(255) NOT NULL,
+	subido_en TIMESTAMPTZ NOT NULL DEFAULT now(),
+	subido_por VARCHAR(255) NOT NULL,
+	encabezados JSONB NOT NULL,
+	filas JSONB NOT NULL
+);

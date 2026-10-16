@@ -1046,11 +1046,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\UadeAulas.Api.csproj",
+      "projectUniqueName": "C:\\Users\\emurbaneja\\OneDrive - Fundación UADE\\Documentos\\GitHub\\Asignacion-clases\\10. BE Asignacion de clases\\UadeAulas.Api\\UadeAulas.Api.csproj",
       "projectName": "UadeAulas.Api",
-      "projectPath": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\UadeAulas.Api.csproj",
+      "projectPath": "C:\\Users\\emurbaneja\\OneDrive - Fundación UADE\\Documentos\\GitHub\\Asignacion-clases\\10. BE Asignacion de clases\\UadeAulas.Api\\UadeAulas.Api.csproj",
       "packagesPath": "C:\\Users\\emurbaneja\\.nuget\\packages\\",
-      "outputPath": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\obj\\",
+      "outputPath": "C:\\Users\\emurbaneja\\OneDrive - Fundación UADE\\Documentos\\GitHub\\Asignacion-clases\\10. BE Asignacion de clases\\UadeAulas.Api\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

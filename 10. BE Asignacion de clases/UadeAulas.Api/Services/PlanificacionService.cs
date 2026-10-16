@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using ClosedXML.Excel;
 using UadeAulas.Api.Data;
 using UadeAulas.Api.Dtos;
+using UadeAulas.Api.Models;
 
 namespace UadeAulas.Api.Services;
 
@@ -20,10 +21,11 @@ public class PlanificacionService
     }
 
     /// <summary>
-    /// Valida y carga un Excel de planificación, reemplazando todo lo existente para el período indicado.
-    /// No modifica la base si hay errores de validación.
+    /// Valida y carga el Excel de planificación de un período. Es la carga inicial y se hace una sola vez:
+    /// si el período ya tiene planificación se rechaza sin leer el archivo (YaCargada). No modifica la base si
+    /// hay errores de validación.
     /// </summary>
-    public async Task<CargaPlanificacionResultDto> CargarPlanificacionAsync(Stream excelStream, string cuatrimestreRaw, string anioRaw)
+    public async Task<CargaPlanificacionResultDto> CargarPlanificacionAsync(Stream excelStream, string cuatrimestreRaw, string anioRaw, string usuario)
     {
         var resultado = new CargaPlanificacionResultDto();
 
@@ -38,6 +40,11 @@ public class PlanificacionService
             resultado.Error = $"El cuatrimestre '{cuatrimestreRaw}' no es válido (debe ser 1 o 2).";
             return resultado;
         }
+
+        var ciclo = $"{anio}-{cuatrimestre}";
+        var periodoExistente = await _repository.GetPeriodoByCicloAsync(ciclo);
+        if (periodoExistente != null && await _repository.PeriodoTieneClasesAsync(periodoExistente.Id))
+            return PlanificacionYaCargada(resultado, periodoExistente.Nombre);
 
         XLWorkbook workbook;
         try
@@ -271,8 +278,7 @@ public class PlanificacionService
             foreach (var (_, fila, docentesFila) in filasParseadas)
                 fila.DocenteIds = docentesFila.Select(n => docentesPorNombre[n.ToLowerInvariant()]).Distinct().ToList();
 
-            var ciclo = $"{anio}-{cuatrimestre}";
-            var periodo = await _repository.GetPeriodoByCicloAsync(ciclo);
+            var periodo = periodoExistente;
             int periodoId;
             if (periodo != null)
             {
@@ -280,16 +286,31 @@ public class PlanificacionService
             }
             else
             {
-                var nombre = $"{(cuatrimestre == 1 ? "Primer" : "Segundo")} Cuatrimestre {anio}";
-                var (fechaDesde, fechaHasta) = cuatrimestre == 1
-                    ? (new DateTime(anio, 3, 1), new DateTime(anio, 7, 15))
-                    : (new DateTime(anio, 8, 1), new DateTime(anio, 12, 15));
+                var (nombre, fechaDesde, fechaHasta) = DatosPeriodoNuevo(anio, cuatrimestre);
                 periodoId = await _repository.CreatePeriodoAsync(ciclo, nombre, fechaDesde, fechaHasta);
                 periodo = new Models.Periodo { Id = periodoId, Ciclo = ciclo, Nombre = nombre };
             }
 
             var filasInsert = filasParseadas.Select(f => f.Fila).ToList();
-            await _repository.ReplacePlanificacionPeriodoAsync(periodoId, filasInsert);
+            var auditoria = new Auditoria
+            {
+                Usuario = usuario,
+                PeriodoId = periodoId,
+                Entidad = "periodo",
+                EntidadId = periodoId,
+                Accion = AccionAuditoria.Alta,
+                Despues = new
+                {
+                    origen = OrigenPlanificacion.Excel,
+                    clases = filasInsert.Count,
+                    asignaciones = filasInsert.Count(f => f.AulaId.HasValue),
+                    docentesCreados = docentesNuevos.Count
+                }
+            };
+
+            // Re-chequea dentro de la transacción por si otra carga se adelantó
+            if (!await _repository.InsertPlanificacionInicialAsync(periodoId, filasInsert, auditoria))
+                return PlanificacionYaCargada(resultado, periodo.Nombre);
 
             resultado.Exito = true;
             resultado.Periodo = periodo.Nombre;
@@ -302,14 +323,32 @@ public class PlanificacionService
         }
     }
 
-    private static bool TryParseAnio(string raw, out int anio)
+    private static CargaPlanificacionResultDto PlanificacionYaCargada(CargaPlanificacionResultDto resultado, string periodoNombre)
+    {
+        resultado.YaCargada = true;
+        resultado.Periodo = periodoNombre;
+        resultado.Error = $"El {periodoNombre} ya tiene planificación cargada. El Excel se usa solo para la carga inicial; " +
+                          "los cambios se hacen editando la planificación en el sistema.";
+        return resultado;
+    }
+
+    /// <summary>Nombre y fechas por defecto de un período nuevo (también lo usa la copia de planificación).</summary>
+    internal static (string Nombre, DateTime FechaDesde, DateTime FechaHasta) DatosPeriodoNuevo(int anio, int cuatrimestre)
+    {
+        var nombre = $"{(cuatrimestre == 1 ? "Primer" : "Segundo")} Cuatrimestre {anio}";
+        return cuatrimestre == 1
+            ? (nombre, new DateTime(anio, 3, 1), new DateTime(anio, 7, 15))
+            : (nombre, new DateTime(anio, 8, 1), new DateTime(anio, 12, 15));
+    }
+
+    internal static bool TryParseAnio(string raw, out int anio)
     {
         anio = 0;
         var match = Regex.Match(raw ?? string.Empty, @"\d{4}");
         return match.Success && int.TryParse(match.Value, out anio) && anio is >= 2000 and <= 2100;
     }
 
-    private static bool TryParseCuatrimestre(string raw, out int cuatrimestre)
+    internal static bool TryParseCuatrimestre(string raw, out int cuatrimestre)
     {
         cuatrimestre = 0;
         var texto = Normalizar(raw ?? string.Empty);
@@ -327,7 +366,8 @@ public class PlanificacionService
         return Regex.Replace(limpio, @"\s+", " ");
     }
 
-    private static string? NormalizarTurno(string texto)
+    // internal: también lo usa la edición de clases (EdicionPlanificacionService)
+    internal static string? NormalizarTurno(string texto)
     {
         return Normalizar(texto) switch
         {
@@ -338,7 +378,7 @@ public class PlanificacionService
         };
     }
 
-    private static string[] ParsearDias(string texto, out List<string> invalidos)
+    internal static string[] ParsearDias(string texto, out List<string> invalidos)
     {
         invalidos = new List<string>();
         var partes = Regex.Split(texto, @"\s+y\s+|[,;/]")

@@ -13,7 +13,8 @@ public static class PlanificacionEndpoints
             .WithName("CargarPlanificacion")
             .DisableAntiforgery()
             .Produces(200)
-            .Produces(400);
+            .Produces(400)
+            .Produces(409);
     }
 
     private const long MaxArchivoBytes = 10 * 1024 * 1024; // 10 MB
@@ -46,8 +47,11 @@ public static class PlanificacionEndpoints
         try
         {
             using var stream = archivo.OpenReadStream();
-            var resultado = await service.CargarPlanificacionAsync(stream, cuatrimestre, anio);
-            return resultado.Exito ? Results.Ok(resultado) : Results.BadRequest(resultado);
+            // El header X-Usuario es opcional acá mientras el front no lo envíe; sin él queda "sin-identificar"
+            var usuario = UsuarioActual.Leer(request) ?? UsuarioActual.SinIdentificar;
+            var resultado = await service.CargarPlanificacionAsync(stream, cuatrimestre, anio, usuario);
+            if (resultado.Exito) return Results.Ok(resultado);
+            return resultado.YaCargada ? Results.Conflict(resultado) : Results.BadRequest(resultado);
         }
         catch (Exception ex)
         {

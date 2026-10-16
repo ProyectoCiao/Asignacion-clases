@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "uUvNC7CP5JM=",
+  "dgSpecHash": "NsWnRiDehR0=",
   "success": true,
-  "projectFilePath": "C:\\Emi\\10. BE Asignacion de clases\\UadeAulas.Api\\UadeAulas.Api.csproj",
+  "projectFilePath": "C:\\Users\\emurbaneja\\OneDrive - Fundación UADE\\Documentos\\GitHub\\Asignacion-clases\\10. BE Asignacion de clases\\UadeAulas.Api\\UadeAulas.Api.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\emurbaneja\\.nuget\\packages\\closedxml\\0.105.1\\closedxml.0.105.1.nupkg.sha512",
     "C:\\Users\\emurbaneja\\.nuget\\packages\\closedxml.parser\\2.0.0\\closedxml.parser.2.0.0.nupkg.sha512",

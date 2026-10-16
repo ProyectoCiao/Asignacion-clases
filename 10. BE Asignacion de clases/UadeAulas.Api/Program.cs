@@ -16,6 +16,13 @@ builder.Services.AddScoped<DemandaService>();
 builder.Services.AddScoped<MapaService>();
 builder.Services.AddScoped<ClaseService>();
 builder.Services.AddScoped<PlanificacionService>();
+builder.Services.AddScoped<PeriodoService>();
+builder.Services.AddScoped<EdicionPlanificacionService>();
+builder.Services.AddScoped<PlanificacionExcelRepository>();
+builder.Services.AddScoped<ExcelCrudoService>();
+builder.Services.AddScoped<DemandaExcelRepository>();
+builder.Services.AddScoped<DemandaExcelService>();
+builder.Services.AddScoped<TablasMaestrasRepository>();
 
 // Add CORS
 var allowedOrigins = builder.Configuration["Cors:AllowedOrigins"] ?? "http://localhost:4200";
@@ -68,13 +75,13 @@ else
 app.UseCors();
 
 // Map endpoints
-app.MapOfertaEndpoints();
-app.MapCatalogEndpoints();
-app.MapCuadreEndpoints();
-app.MapDemandaEndpoints();
-app.MapMapaClaseEndpoints();
-app.MapPlanificacionEndpoints();
-app.MapPeriodoEndpoints();
+// 2026-10-08: se borraron las tablas del modelo anterior (sede, aula, clase, periodo, ...) a la espera de las
+// nuevas. Sus endpoints quedan sin mapear (el código sigue en el repo para reaprovecharlo):
+// MapOfertaEndpoints, MapCatalogEndpoints, MapCuadreEndpoints, MapDemandaEndpoints, MapMapaClaseEndpoints,
+// MapPlanificacionEndpoints, MapPeriodoEndpoints, MapEdicionEndpoints.
+app.MapPlanificacionInicialEndpoints();
+app.MapDemandaExcelEndpoints();
+app.MapTablasMaestrasEndpoints();
 
 // Health check endpoint
 app.MapGet("/health", () => new { status = "healthy" })

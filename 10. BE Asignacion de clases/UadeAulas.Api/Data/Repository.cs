@@ -125,25 +125,48 @@ public class Repository
     }
 
     // Periodos
+    private const string PeriodoColumnas = @"p.id, p.ciclo, p.nombre, p.fecha_desde, p.fecha_hasta,
+                                              p.fecha_congelamiento, p.fecha_fin_inscripcion,
+                                              p.reabierta_en, p.reabierta_por, p.reabierta_motivo,
+                                              p.origen, p.periodo_origen_id";
+
+    private static Periodo LeerPeriodo(NpgsqlDataReader reader)
+    {
+        return new Periodo
+        {
+            Id = reader.GetInt32(0),
+            Ciclo = reader.GetString(1),
+            Nombre = reader.GetString(2),
+            FechaDesde = reader.GetDateTime(3),
+            FechaHasta = reader.GetDateTime(4),
+            FechaCongelamiento = reader.IsDBNull(5) ? null : reader.GetDateTime(5),
+            FechaFinInscripcion = reader.IsDBNull(6) ? null : reader.GetDateTime(6),
+            ReabiertaEn = reader.IsDBNull(7) ? null : reader.GetDateTime(7),
+            ReabiertaPor = reader.IsDBNull(8) ? null : reader.GetString(8),
+            ReabiertaMotivo = reader.IsDBNull(9) ? null : reader.GetString(9),
+            Origen = reader.GetString(10),
+            PeriodoOrigenId = reader.IsDBNull(11) ? null : reader.GetInt32(11)
+        };
+    }
+
     public async Task<List<Periodo>> GetPeriodosAsync()
     {
         var periodos = new List<Periodo>();
         using var conn = await GetConnectionAsync();
-        using var cmd = new NpgsqlCommand(@"SELECT id, ciclo, nombre, fecha_desde, fecha_hasta 
-                                             FROM periodo ORDER BY fecha_desde DESC", conn);
+        using var cmd = new NpgsqlCommand($"SELECT {PeriodoColumnas} FROM periodo p ORDER BY p.fecha_desde DESC", conn);
         using var reader = await cmd.ExecuteReaderAsync();
         while (await reader.ReadAsync())
-        {
-            periodos.Add(new Periodo
-            {
-                Id = reader.GetInt32(0),
-                Ciclo = reader.GetString(1),
-                Nombre = reader.GetString(2),
-                FechaDesde = reader.GetDateTime(3),
-                FechaHasta = reader.GetDateTime(4)
-            });
-        }
+            periodos.Add(LeerPeriodo(reader));
         return periodos;
+    }
+
+    public async Task<Periodo?> GetPeriodoByIdAsync(int periodoId)
+    {
+        using var conn = await GetConnectionAsync();
+        using var cmd = new NpgsqlCommand($"SELECT {PeriodoColumnas} FROM periodo p WHERE p.id = @id", conn);
+        cmd.Parameters.AddWithValue("@id", periodoId);
+        using var reader = await cmd.ExecuteReaderAsync();
+        return await reader.ReadAsync() ? LeerPeriodo(reader) : null;
     }
 
     /// <summary>
@@ -153,24 +176,13 @@ public class Repository
     public async Task<Periodo?> GetPeriodoActualAsync()
     {
         using var conn = await GetConnectionAsync();
-        using var cmd = new NpgsqlCommand(@"SELECT p.id, p.ciclo, p.nombre, p.fecha_desde, p.fecha_hasta
+        using var cmd = new NpgsqlCommand($@"SELECT {PeriodoColumnas}
                                              FROM periodo p
                                              ORDER BY EXISTS (SELECT 1 FROM clase c WHERE c.periodo_id = p.id) DESC,
                                                       p.fecha_desde DESC
                                              LIMIT 1", conn);
         using var reader = await cmd.ExecuteReaderAsync();
-        if (await reader.ReadAsync())
-        {
-            return new Periodo
-            {
-                Id = reader.GetInt32(0),
-                Ciclo = reader.GetString(1),
-                Nombre = reader.GetString(2),
-                FechaDesde = reader.GetDateTime(3),
-                FechaHasta = reader.GetDateTime(4)
-            };
-        }
-        return null;
+        return await reader.ReadAsync() ? LeerPeriodo(reader) : null;
     }
 
     // Clases con joins
@@ -470,7 +482,7 @@ public class Repository
         using var cmd = new NpgsqlCommand(@"SELECT COALESCE(MAX(nro_clase), 0) + 1 FROM clase", conn);
 
         var result = await cmd.ExecuteScalarAsync();
-        return result != null ? (int)(long)result : 1;
+        return result != null ? Convert.ToInt32(result) : 1;
     }
 
     // Crear nueva clase
@@ -504,23 +516,11 @@ public class Repository
     public async Task<Periodo?> GetPeriodoByCicloAsync(string ciclo)
     {
         using var conn = await GetConnectionAsync();
-        using var cmd = new NpgsqlCommand(@"SELECT id, ciclo, nombre, fecha_desde, fecha_hasta 
-                                             FROM periodo WHERE ciclo = @ciclo", conn);
+        using var cmd = new NpgsqlCommand($"SELECT {PeriodoColumnas} FROM periodo p WHERE p.ciclo = @ciclo", conn);
         cmd.Parameters.AddWithValue("@ciclo", ciclo);
 
         using var reader = await cmd.ExecuteReaderAsync();
-        if (await reader.ReadAsync())
-        {
-            return new Periodo
-            {
-                Id = reader.GetInt32(0),
-                Ciclo = reader.GetString(1),
-                Nombre = reader.GetString(2),
-                FechaDesde = reader.GetDateTime(3),
-                FechaHasta = reader.GetDateTime(4)
-            };
-        }
-        return null;
+        return await reader.ReadAsync() ? LeerPeriodo(reader) : null;
     }
 
     public async Task<int> CreatePeriodoAsync(string ciclo, string nombre, DateTime fechaDesde, DateTime fechaHasta)
@@ -548,40 +548,46 @@ public class Repository
         return (int)result!;
     }
 
+    public async Task<bool> PeriodoTieneClasesAsync(int periodoId)
+    {
+        using var conn = await GetConnectionAsync();
+        using var cmd = new NpgsqlCommand("SELECT EXISTS (SELECT 1 FROM clase WHERE periodo_id = @periodoId)", conn);
+        cmd.Parameters.AddWithValue("@periodoId", periodoId);
+        return (bool)(await cmd.ExecuteScalarAsync())!;
+    }
+
     /// <summary>
-    /// Reemplaza toda la planificación (clase/clase_docente/asignacion) de un período dentro de una única
-    /// transacción: borra lo existente y carga las filas nuevas. Si algo falla, no queda nada aplicado.
+    /// Carga inicial de la planificación de un período desde el Excel (clase/clase_docente/asignacion) en una
+    /// única transacción, junto con su registro de auditoría. Nunca pisa una planificación existente: si el
+    /// período ya tiene clases no inserta nada y devuelve false. Si algo falla, no queda nada aplicado.
     /// </summary>
-    public async Task<int> ReplacePlanificacionPeriodoAsync(int periodoId, List<PlanificacionFilaInsert> filas)
+    public async Task<bool> InsertPlanificacionInicialAsync(int periodoId, List<PlanificacionFilaInsert> filas, Auditoria auditoria)
     {
         using var conn = await GetConnectionAsync();
         using var tx = await conn.BeginTransactionAsync();
         try
         {
-            using (var cmdDelAsig = new NpgsqlCommand(
-                "DELETE FROM asignacion WHERE clase_id IN (SELECT id FROM clase WHERE periodo_id = @periodoId)", conn, tx))
+            // Bloquea la fila del período para que dos cargas simultáneas no pasen ambas el chequeo
+            using (var cmdLock = new NpgsqlCommand("SELECT id FROM periodo WHERE id = @periodoId FOR UPDATE", conn, tx))
             {
-                cmdDelAsig.Parameters.AddWithValue("@periodoId", periodoId);
-                await cmdDelAsig.ExecuteNonQueryAsync();
+                cmdLock.Parameters.AddWithValue("@periodoId", periodoId);
+                await cmdLock.ExecuteNonQueryAsync();
             }
 
-            using (var cmdDelDoc = new NpgsqlCommand(
-                "DELETE FROM clase_docente WHERE clase_id IN (SELECT id FROM clase WHERE periodo_id = @periodoId)", conn, tx))
+            using (var cmdExiste = new NpgsqlCommand("SELECT EXISTS (SELECT 1 FROM clase WHERE periodo_id = @periodoId)", conn, tx))
             {
-                cmdDelDoc.Parameters.AddWithValue("@periodoId", periodoId);
-                await cmdDelDoc.ExecuteNonQueryAsync();
-            }
-
-            using (var cmdDelClase = new NpgsqlCommand("DELETE FROM clase WHERE periodo_id = @periodoId", conn, tx))
-            {
-                cmdDelClase.Parameters.AddWithValue("@periodoId", periodoId);
-                await cmdDelClase.ExecuteNonQueryAsync();
+                cmdExiste.Parameters.AddWithValue("@periodoId", periodoId);
+                if ((bool)(await cmdExiste.ExecuteScalarAsync())!)
+                {
+                    await tx.RollbackAsync();
+                    return false;
+                }
             }
 
             int proximoNro;
             using (var cmdMax = new NpgsqlCommand("SELECT COALESCE(MAX(nro_clase), 0) + 1 FROM clase", conn, tx))
             {
-                proximoNro = (int)(long)(await cmdMax.ExecuteScalarAsync())!;
+                proximoNro = Convert.ToInt32(await cmdMax.ExecuteScalarAsync());
             }
 
             foreach (var fila in filas)
@@ -633,8 +639,9 @@ public class Repository
                 proximoNro++;
             }
 
+            await InsertAuditoriaAsync(conn, tx, auditoria);
             await tx.CommitAsync();
-            return filas.Count;
+            return true;
         }
         catch
         {
@@ -642,4 +649,259 @@ public class Repository
             throw;
         }
     }
+
+    /// <summary>
+    /// Actualiza las fechas de congelamiento y fin de inscripción de un período y registra el cambio en la
+    /// misma transacción.
+    /// </summary>
+    public async Task UpdateFechasPlanificacionAsync(int periodoId, DateTime? fechaCongelamiento, DateTime? fechaFinInscripcion, Auditoria auditoria)
+    {
+        using var conn = await GetConnectionAsync();
+        using var tx = await conn.BeginTransactionAsync();
+        try
+        {
+            using (var cmd = new NpgsqlCommand(@"UPDATE periodo
+                                                  SET fecha_congelamiento = @congelamiento, fecha_fin_inscripcion = @finInscripcion
+                                                  WHERE id = @periodoId", conn, tx))
+            {
+                cmd.Parameters.Add(new NpgsqlParameter("@congelamiento", NpgsqlTypes.NpgsqlDbType.TimestampTz) { Value = (object?)fechaCongelamiento ?? DBNull.Value });
+                cmd.Parameters.Add(new NpgsqlParameter("@finInscripcion", NpgsqlTypes.NpgsqlDbType.TimestampTz) { Value = (object?)fechaFinInscripcion ?? DBNull.Value });
+                cmd.Parameters.AddWithValue("@periodoId", periodoId);
+                await cmd.ExecuteNonQueryAsync();
+            }
+
+            await InsertAuditoriaAsync(conn, tx, auditoria);
+            await tx.CommitAsync();
+        }
+        catch
+        {
+            await tx.RollbackAsync();
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Aplica un lote de cambios de clases (ya validado sobre el estado final) en una única transacción, con
+    /// su auditoría. Bloquea la fila del período para serializar ediciones simultáneas del mismo período.
+    /// </summary>
+    public async Task AplicarCambiosClasesAsync(int periodoId, List<ClaseEdicion> clases, List<Auditoria> auditorias)
+    {
+        using var conn = await GetConnectionAsync();
+        using var tx = await conn.BeginTransactionAsync();
+        try
+        {
+            using (var cmdLock = new NpgsqlCommand("SELECT id FROM periodo WHERE id = @periodoId FOR UPDATE", conn, tx))
+            {
+                cmdLock.Parameters.AddWithValue("@periodoId", periodoId);
+                await cmdLock.ExecuteNonQueryAsync();
+            }
+
+            foreach (var c in clases)
+            {
+                using (var cmd = new NpgsqlCommand(@"UPDATE clase
+                            SET materia_codigo = @materia, turno = @turno, dias = @dias,
+                                horario_desde = @desde, horario_hasta = @hasta
+                            WHERE id = @claseId AND periodo_id = @periodoId", conn, tx))
+                {
+                    cmd.Parameters.AddWithValue("@materia", c.MateriaCodigo);
+                    cmd.Parameters.AddWithValue("@turno", c.Turno);
+                    cmd.Parameters.AddWithValue("@dias", c.Dias);
+                    cmd.Parameters.AddWithValue("@desde", c.HorarioDesde);
+                    cmd.Parameters.AddWithValue("@hasta", c.HorarioHasta);
+                    cmd.Parameters.AddWithValue("@claseId", c.ClaseId);
+                    cmd.Parameters.AddWithValue("@periodoId", periodoId);
+                    if (await cmd.ExecuteNonQueryAsync() != 1)
+                        throw new InvalidOperationException($"La clase {c.ClaseId} no pertenece al período {periodoId}.");
+                }
+
+                if (c.DocenteIds != null)
+                {
+                    using (var cmdDel = new NpgsqlCommand("DELETE FROM clase_docente WHERE clase_id = @claseId", conn, tx))
+                    {
+                        cmdDel.Parameters.AddWithValue("@claseId", c.ClaseId);
+                        await cmdDel.ExecuteNonQueryAsync();
+                    }
+                    foreach (var docenteId in c.DocenteIds)
+                    {
+                        using var cmdIns = new NpgsqlCommand(@"INSERT INTO clase_docente (clase_id, docente_id)
+                                                                VALUES (@claseId, @docenteId) ON CONFLICT DO NOTHING", conn, tx);
+                        cmdIns.Parameters.AddWithValue("@claseId", c.ClaseId);
+                        cmdIns.Parameters.AddWithValue("@docenteId", docenteId);
+                        await cmdIns.ExecuteNonQueryAsync();
+                    }
+                }
+
+                if (c.AulaId.HasValue)
+                {
+                    using var cmdAsig = new NpgsqlCommand(@"INSERT INTO asignacion (clase_id, aula_id, sillas_vacias, origen)
+                                VALUES (@claseId, @aulaId, @sillas, 'MANUAL')
+                                ON CONFLICT (clase_id) DO UPDATE
+                                SET aula_id = EXCLUDED.aula_id, sillas_vacias = EXCLUDED.sillas_vacias, origen = 'MANUAL'", conn, tx);
+                    cmdAsig.Parameters.AddWithValue("@claseId", c.ClaseId);
+                    cmdAsig.Parameters.AddWithValue("@aulaId", c.AulaId.Value);
+                    cmdAsig.Parameters.AddWithValue("@sillas", c.SillasVacias);
+                    await cmdAsig.ExecuteNonQueryAsync();
+                }
+            }
+
+            foreach (var a in auditorias)
+                await InsertAuditoriaAsync(conn, tx, a);
+
+            await tx.CommitAsync();
+        }
+        catch
+        {
+            await tx.RollbackAsync();
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Copia la planificación de un período (clase, clase_docente, asignacion) a otro período, que se crea si no
+    /// existe, en una única transacción y con su auditoría. Las clases nuevas arrancan sin inscriptos; los
+    /// docentes y las aulas se copian tal cual. Devuelve null, sin aplicar nada, si el destino ya tiene clases.
+    /// </summary>
+    public async Task<CopiaPlanificacionResultado?> CopiarPlanificacionAsync(
+        int periodoOrigenId, string ciclo, string nombre, DateTime fechaDesde, DateTime fechaHasta,
+        Func<CopiaPlanificacionResultado, Auditoria> crearAuditoria)
+    {
+        using var conn = await GetConnectionAsync();
+        using var tx = await conn.BeginTransactionAsync();
+        try
+        {
+            async Task<object?> Escalar(string sql, params (string, object)[] ps)
+            {
+                using var cmd = new NpgsqlCommand(sql, conn, tx);
+                foreach (var (n, v) in ps) cmd.Parameters.AddWithValue(n, v);
+                return await cmd.ExecuteScalarAsync();
+            }
+            async Task<int> Ejecutar(string sql, params (string, object)[] ps)
+            {
+                using var cmd = new NpgsqlCommand(sql, conn, tx);
+                foreach (var (n, v) in ps) cmd.Parameters.AddWithValue(n, v);
+                return await cmd.ExecuteNonQueryAsync();
+            }
+
+            // Período destino: el existente (bloqueado) o uno nuevo
+            var destino = await Escalar("SELECT id FROM periodo WHERE ciclo = @ciclo FOR UPDATE", ("@ciclo", ciclo));
+            int periodoId;
+            if (destino != null)
+            {
+                periodoId = (int)destino;
+                if ((bool)(await Escalar("SELECT EXISTS (SELECT 1 FROM clase WHERE periodo_id = @p)", ("@p", periodoId)))!)
+                {
+                    await tx.RollbackAsync();
+                    return null;
+                }
+                await Ejecutar("UPDATE periodo SET origen = 'COPIA', periodo_origen_id = @origen WHERE id = @p",
+                    ("@origen", periodoOrigenId), ("@p", periodoId));
+            }
+            else
+            {
+                periodoId = (int)(await Escalar(@"INSERT INTO periodo (ciclo, nombre, fecha_desde, fecha_hasta, origen, periodo_origen_id)
+                                                  VALUES (@ciclo, @nombre, @desde, @hasta, 'COPIA', @origen) RETURNING id",
+                    ("@ciclo", ciclo), ("@nombre", nombre), ("@desde", fechaDesde), ("@hasta", fechaHasta), ("@origen", periodoOrigenId)))!;
+            }
+
+            // Mapeo clase origen -> clase nueva (id de la secuencia y nro_clase correlativo al máximo actual)
+            await Ejecutar(@"CREATE TEMP TABLE map_clase ON COMMIT DROP AS
+                             SELECT c.id AS old_id,
+                                    nextval(pg_get_serial_sequence('clase', 'id')) AS new_id,
+                                    (SELECT COALESCE(MAX(nro_clase), 0) FROM clase)
+                                        + row_number() OVER (ORDER BY c.nro_clase, c.id) AS nro
+                             FROM clase c WHERE c.periodo_id = @origen", ("@origen", periodoOrigenId));
+
+            var resultado = new CopiaPlanificacionResultado { PeriodoId = periodoId };
+
+            resultado.Clases = await Ejecutar(@"INSERT INTO clase (id, nro_clase, periodo_id, sede_id, materia_codigo, turno,
+                                                    horario_desde, horario_hasta, dias, regimen, idioma, modalidad,
+                                                    inscriptos, inscriptos_con_reserva, packs)
+                             SELECT m.new_id, m.nro, @destino, c.sede_id, c.materia_codigo, c.turno,
+                                    c.horario_desde, c.horario_hasta, c.dias, c.regimen, c.idioma, c.modalidad,
+                                    0, 0, c.packs
+                             FROM clase c JOIN map_clase m ON m.old_id = c.id", ("@destino", periodoId));
+
+            resultado.Docentes = await Ejecutar(@"INSERT INTO clase_docente (clase_id, docente_id)
+                             SELECT m.new_id, cd.docente_id FROM clase_docente cd JOIN map_clase m ON m.old_id = cd.clase_id");
+
+            // Sin inscriptos todavía: sillas vacías = capacidad del aula
+            resultado.Asignaciones = await Ejecutar(@"INSERT INTO asignacion (clase_id, aula_id, origen, sillas_vacias)
+                             SELECT m.new_id, a.aula_id, 'COPIA', COALESCE(au.capacidad_total, 0)
+                             FROM asignacion a JOIN map_clase m ON m.old_id = a.clase_id
+                             LEFT JOIN aula au ON au.id = a.aula_id");
+
+            // Clases que quedan en aulas hoy inactivas: se informan para que el backoffice las mueva
+            using (var cmd = new NpgsqlCommand(@"SELECT c.nro_clase, au.codigo
+                             FROM clase c JOIN asignacion a ON a.clase_id = c.id JOIN aula au ON au.id = a.aula_id
+                             WHERE c.periodo_id = @destino AND NOT au.activa ORDER BY c.nro_clase", conn, tx))
+            {
+                cmd.Parameters.AddWithValue("@destino", periodoId);
+                using var reader = await cmd.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
+                    resultado.ClasesEnAulasInactivas.Add($"Clase {reader.GetInt32(0)}: el aula {reader.GetString(1)} está inactiva.");
+            }
+
+            await InsertAuditoriaAsync(conn, tx, crearAuditoria(resultado));
+            await tx.CommitAsync();
+            return resultado;
+        }
+        catch
+        {
+            await tx.RollbackAsync();
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Abre (usuario y motivo) o cierra (nulls) la reapertura vigente de un período, con su auditoría, en una transacción.
+    /// </summary>
+    public async Task SetReaperturaAsync(int periodoId, bool reabrir, string? usuario, string? motivo, Auditoria auditoria)
+    {
+        using var conn = await GetConnectionAsync();
+        using var tx = await conn.BeginTransactionAsync();
+        try
+        {
+            using (var cmd = new NpgsqlCommand(@"UPDATE periodo
+                        SET reabierta_en = CASE WHEN @reabrir THEN now() END,
+                            reabierta_por = @usuario, reabierta_motivo = @motivo
+                        WHERE id = @periodoId", conn, tx))
+            {
+                cmd.Parameters.AddWithValue("@reabrir", reabrir);
+                cmd.Parameters.Add(new NpgsqlParameter("@usuario", NpgsqlTypes.NpgsqlDbType.Varchar) { Value = reabrir ? usuario! : DBNull.Value });
+                cmd.Parameters.Add(new NpgsqlParameter("@motivo", NpgsqlTypes.NpgsqlDbType.Text) { Value = reabrir ? motivo! : DBNull.Value });
+                cmd.Parameters.AddWithValue("@periodoId", periodoId);
+                await cmd.ExecuteNonQueryAsync();
+            }
+
+            await InsertAuditoriaAsync(conn, tx, auditoria);
+            await tx.CommitAsync();
+        }
+        catch
+        {
+            await tx.RollbackAsync();
+            throw;
+        }
+    }
+
+    // Auditoría: siempre dentro de la transacción del cambio que registra
+    private static async Task InsertAuditoriaAsync(NpgsqlConnection conn, NpgsqlTransaction tx, Auditoria a)
+    {
+        using var cmd = new NpgsqlCommand(@"INSERT INTO auditoria_cambios
+                    (usuario, periodo_id, entidad, entidad_id, accion, es_emergencia, motivo, antes, despues, lote)
+                    VALUES (@usuario, @periodoId, @entidad, @entidadId, @accion, @emergencia, @motivo, @antes, @despues, @lote)", conn, tx);
+        cmd.Parameters.Add(new NpgsqlParameter("@lote", NpgsqlTypes.NpgsqlDbType.Uuid) { Value = (object?)a.Lote ?? DBNull.Value });
+        cmd.Parameters.AddWithValue("@usuario", a.Usuario);
+        cmd.Parameters.AddWithValue("@periodoId", (object?)a.PeriodoId ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@entidad", a.Entidad);
+        cmd.Parameters.AddWithValue("@entidadId", (object?)a.EntidadId ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@accion", a.Accion);
+        cmd.Parameters.AddWithValue("@emergencia", a.EsEmergencia);
+        cmd.Parameters.AddWithValue("@motivo", (object?)a.Motivo ?? DBNull.Value);
+        cmd.Parameters.Add(new NpgsqlParameter("@antes", NpgsqlTypes.NpgsqlDbType.Jsonb) { Value = ToJson(a.Antes) });
+        cmd.Parameters.Add(new NpgsqlParameter("@despues", NpgsqlTypes.NpgsqlDbType.Jsonb) { Value = ToJson(a.Despues) });
+        await cmd.ExecuteNonQueryAsync();
+    }
+
+    private static object ToJson(object? valor) =>
+        valor == null ? DBNull.Value : System.Text.Json.JsonSerializer.Serialize(valor);
 }
