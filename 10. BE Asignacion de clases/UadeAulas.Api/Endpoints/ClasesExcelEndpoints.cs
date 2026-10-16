@@ -28,13 +28,13 @@ public static class ClasesExcelEndpoints
         alumnos.MapPost("/generar", GenerarAsignacionAlumnos).WithName("GenerarAsignacionAlumnos");
     }
 
-    /// <summary>sede, turno, periodo ("1er Cuatr", "2do Cuatr"...), edificio, piso y aula aceptan varios valores repitiendo el parámetro.</summary>
+    /// <summary>sede, turno, periodo ("1er Cuatr", "2do Cuatr"...), materia (nombre), edificio, piso y aula aceptan varios valores repitiendo el parámetro.</summary>
     public static async Task<IResult> GetPagina(
         ClasesExcelService service, int? pagina, int? tamanio, string[]? sede, string[]? turno, int[]? edificio,
-        string[]? piso, int[]? aula, string? q, bool? soloConAula, string[]? periodo)
+        string[]? piso, int[]? aula, string? q, bool? soloConAula, string[]? periodo, string[]? materia)
     {
         var resultado = await service.GetPaginaAsync(
-            pagina ?? 1, tamanio ?? 200, sede, turno, edificio, piso, aula, q, soloConAula, periodo);
+            pagina ?? 1, tamanio ?? 200, sede, turno, edificio, piso, aula, q, soloConAula, periodo, materia);
         return Results.Ok(resultado);
     }
 

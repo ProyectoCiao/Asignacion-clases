@@ -21,10 +21,12 @@ public class ExcelCrudoService
     public const int MaxFilasPorPagina = 200;
 
     private readonly PlanificacionExcelRepository _repository;
+    private readonly TablasMaestrasRepository _maestras;
 
-    public ExcelCrudoService(PlanificacionExcelRepository repository)
+    public ExcelCrudoService(PlanificacionExcelRepository repository, TablasMaestrasRepository maestras)
     {
         _repository = repository;
+        _maestras = maestras;
     }
 
     // Columnas que la planificación va a necesitar a futuro. Se reconocen igual que en la carga anterior:
@@ -117,7 +119,7 @@ public class ExcelCrudoService
     public Task<bool> HayPlanificacionAsync() => _repository.ExisteAsync();
 
     public async Task<PlanificacionInicialPaginaDto> GetPaginaAsync(
-        int pagina, int tamanio, string[]? sedes, string[]? turnos, string[]? facultades, string? q)
+        int pagina, int tamanio, string[]? sedes, string[]? turnos, string[]? facultades, string? q, string[]? materias = null)
     {
         var guardada = await _repository.ObtenerAsync();
         if (guardada == null)
@@ -132,6 +134,17 @@ public class ExcelCrudoService
         filtradas = FiltrarSede(filtradas, colSede, sedes);
         filtradas = FiltrarIgual(filtradas, colTurno, turnos);
         filtradas = FiltrarIgual(filtradas, colFacultad, facultades);
+        var buscadasMaterias = Buscados(materias);
+        if (buscadasMaterias.Count > 0)
+        {
+            // Por código de materia (el nombre del Excel a veces viene abreviado) o, si no, por nombre
+            var colNombre = BuscarColumna(normalizados, ["materia"]);
+            var colCodigo = BuscarColumna(normalizados, ["codigomateria", "codigo materia"]);
+            var codigos = await _maestras.GetCodigosDeMateriasAsync(materias!.Where(m => !string.IsNullOrWhiteSpace(m)).ToArray());
+            filtradas = filtradas.Where(f =>
+                (colCodigo != null && codigos.Contains(f[colCodigo.Value].Trim().ToUpperInvariant()))
+                || (colNombre != null && buscadasMaterias.Contains(Normalizar(f[colNombre.Value]))));
+        }
         if (!string.IsNullOrWhiteSpace(q))
         {
             var buscado = Normalizar(q);

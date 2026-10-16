@@ -102,7 +102,7 @@ public class ClasesExcelService
 
     public async Task<ClasesPaginaDto> GetPaginaAsync(
         int pagina, int tamanio, string[]? sedes, string[]? turnos, int[]? edificios, string[]? pisos, int[]? aulas,
-        string? q, bool? soloConAula, string[]? periodos = null)
+        string? q, bool? soloConAula, string[]? periodos = null, string[]? materias = null)
     {
         var bases = await ObtenerBasesAsync();
         if (bases == null) return new ClasesPaginaDto { Cargada = false };
@@ -118,6 +118,16 @@ public class ClasesExcelService
             filtradas = filtradas.Where(c => CoincideSede(c.Sede, buscadasSedes));
         if (buscadosTurnos.Count > 0)
             filtradas = filtradas.Where(c => buscadosTurnos.Contains(ExcelCrudoService.Normalizar(c.Turno)));
+        // Materia: nombre de `materia.materia_nombre`, comparado con la columna Materia del Excel sin acentos ni mayúsculas
+        // y, sobre todo, por código de materia (el nombre del Excel a veces viene abreviado)
+        var buscadasMaterias = Normalizados(materias);
+        if (buscadasMaterias.Count > 0)
+        {
+            var codigos = await _maestras.GetCodigosDeMateriasAsync(materias!.Where(m => !string.IsNullOrWhiteSpace(m)).ToArray());
+            filtradas = filtradas.Where(c =>
+                codigos.Contains(c.CodigoMateria.Trim().ToUpperInvariant())
+                || buscadasMaterias.Contains(ExcelCrudoService.Normalizar(c.Materia)));
+        }
         var buscadosPeriodos = Normalizados(periodos);
         if (buscadosPeriodos.Count > 0)
             filtradas = filtradas.Where(c => buscadosPeriodos.Contains(ExcelCrudoService.Normalizar(c.Periodo)));

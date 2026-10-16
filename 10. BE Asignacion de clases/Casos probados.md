@@ -269,6 +269,18 @@ Clase 779954 (5418, miércoles 07:45–11:45, 49 inscriptos, aula 293 de 48).
 
 Reglas: bloquean choque de aula (mismo ciclo y período —un anual se superpone con cualquier cuatrimestre, no con verano—, día y horario en común) y cupo (inscriptos > sillas, forzable). El choque de docente (mismo docente, período, día y horario) NO bloquea: no depende del aula, así que vuelve como advertencia. ⚠ Sin probar: una advertencia CHOQUE_DOCENTE real (no apareció en estas clases); no se comparan las fechas Desde/Hasta, solo el período.
 
+### Filtro Materia en todos los tabs (2026-10-16)
+Opciones de `GET /maestros/materias` (tabla `materia`, columna `materia_nombre`, 2.457 nombres).
+
+| # | Caso | Resultado | Estado |
+|---|---|---|---|
+| MT1 | `GET /clases?materia=TECNOLOGIA GRAFICA` (nombre de la tabla, sin acento) | 8 clases cuyo nombre en el Excel es "TECNOLOGÍA GRÁFICA"; con `periodo=2do Cuatr`, 7 | ✅ |
+| MT2 | Nombre largo de la tabla vs abreviado del Excel ("…TOMA DE DECISIONES EMPRESARIALES EN NEGOCIOS INTERNACIONALES" vs "…TOMA DE DEC. EMP. EN NEG. INTER.") | 4 clases: el filtro cruza por **código de materia** (`materia.codigo_materia` = CódigoMateria; cubre las 10.000 clases) además del nombre; solo por nombre quedaba un 10% afuera | ✅ |
+| MT3 | Mapa: Chile 2 + 2do Cuatr + Materia + Aplicar filtro | quedan solo las aulas 293 y 294 con TECNOLOGÍA GRÁFICA (clases 3659 y 6583) | ✅ |
+| MT4 | Aulas: Materia + Aplicar filtro | 5 aulas de Monserrat y 1 de Pinamar con esa materia (293 y 294 con inscriptos; las de tarde/noche "Sin inscriptos"); las demás aulas desaparecen | ✅ |
+| MT5 | Última planificación: Materia | 8 filas (`/planificacion-inicial?materia=`) | ✅ |
+| MT6 | Docentes y Planificación final | el desplegable Materia existe y manda `materiaNombres` (esos tabs siguen sin datos: desvinculados de `/clases`) | ⚠ solo la presencia |
+
 ### Asignar alumnos a aulas (Mapa, 2026-10-16)
 Muestra de demanda (811 inscripciones, 435 alumnos, con 2da opción) y planificación real.
 

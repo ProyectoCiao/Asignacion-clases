@@ -24,6 +24,25 @@ public class TablasMaestrasRepository
     public Task<List<ItemMaestroDto>> GetTurnosAsync() =>
         ListarAsync("SELECT id, turno_nombre FROM turno ORDER BY id");
 
+    /// <summary>
+    /// Códigos de materia (`materia.codigo_materia`, en mayúsculas) de los nombres dados (`materia.materia_nombre`). La
+    /// planificación abrevia algunos nombres ("DEC. EMP. EN NEG. INTER."), pero el código siempre coincide.
+    /// </summary>
+    public async Task<HashSet<string>> GetCodigosDeMateriasAsync(string[] nombres)
+    {
+        var codigos = new HashSet<string>();
+        if (nombres.Length == 0) return codigos;
+        await using var conn = new NpgsqlConnection(_connectionString);
+        await conn.OpenAsync();
+        await using var cmd = new NpgsqlCommand(@"
+            SELECT DISTINCT UPPER(TRIM(codigo_materia)) FROM materia
+            WHERE codigo_materia IS NOT NULL AND TRIM(materia_nombre) = ANY(@n)", conn);
+        cmd.Parameters.AddWithValue("@n", nombres.Select(n => n.Trim()).ToArray());
+        await using var reader = await cmd.ExecuteReaderAsync();
+        while (await reader.ReadAsync()) codigos.Add(reader.GetString(0));
+        return codigos;
+    }
+
     /// <summary>Períodos de la tabla `periodo` (1er Cuatr, 2do Cuatr, Anual, Verano...), en el orden en que se cargaron.</summary>
     public Task<List<ItemMaestroDto>> GetPeriodosAsync() =>
         ListarAsync("SELECT id, TRIM(periodo_nombre) FROM periodo WHERE NULLIF(TRIM(periodo_nombre), '') IS NOT NULL ORDER BY id");
