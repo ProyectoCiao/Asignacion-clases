@@ -278,6 +278,15 @@ Ronda contra la API real (:5080) como `backoffice.sintetico@uade.edu.ar`, 2do Cu
 | PB2 | Candidatas del mismo tipo, mismo edificio primero | 3 clases de la 296 (cap 40; 44, 43 y 41 insc.) pasan a la 399 (cap 60, sin choques: lunes, miércoles y viernes) y la 5418 (49 insc., miércoles) queda "sin aula viable" (los 5 candidatos dan CHOQUE_AULA: la 399 ya tiene a otra el miércoles) | ✅ |
 | PB3 | Estado y rastro | 0 sobrecupos en lo movido; `modificadaPor` = el mail de la persona; todo revertido con `DELETE` (`asignacion_aula` vacía) | ✅ |
 
+### Mapa: "Aplicar filtro" (2026-10-16)
+| # | Caso | Resultado | Estado |
+|---|---|---|---|
+| MA1 | Cambiar Edificio (Chile 2) y Turno (Tarde) sin tocar el botón | no se hace ningún pedido a `/clases`; el mapa sigue siendo el anterior y aparece el aviso "Cambiaste los filtros…"; el Piso se acota solo a "Piso 2" | ✅ |
+| MA2 | Tocar "Aplicar filtro" | 1 pedido a `/clases`, el aviso desaparece y se ven 292–296 con 8–10 clases de la tarde | ✅ |
+| AP1 | Aulas: cambiar Edificio (Chile 2) y Período (2do Cuatr) sin tocar el botón | la tabla sigue con las 374 filas, aparece el aviso y el botón se habilita (de entrada está deshabilitado) | ✅ |
+| AP2 | Aulas: "Aplicar filtro" | 8 filas (Chile 2), 292–296 con 14–15 clases y los mismos máx. de demanda que el Mapa; el aviso desaparece y el botón vuelve a deshabilitarse | ✅ |
+Antes (CL8–CL13) los filtros del Mapa aplicaban al elegir cada valor; ahora solo con el botón (igual que Demanda). Carga inicial y "Cambiar aula" siguen consultando solos.
+
 La edición de CL9 se revirtió con `DELETE /clases/{id}/aula` (`asignacion_aula` vacía).
 ⚠ Sin probar: el modo noche y el teléfono del detalle de aula; el cambio con rol Impersonate (no debería ver los botones).
 
